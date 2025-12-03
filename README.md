@@ -1,4 +1,4 @@
-# OPET Project
+
 
 ## Overview
 Application for transaction categorization, integrating AI, backend services, and a modern frontend. It enables secure, role-based management of finances, including shared accounts to track money collaboratively.
