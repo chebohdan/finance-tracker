@@ -3,6 +3,7 @@ package com.example.financetracker.service;
 import com.example.financetracker.dto.CategoryPredictionResponse;
 import com.example.financetracker.dto.TransactionRequest;
 import com.example.financetracker.dto.TransactionResponse;
+import com.example.financetracker.exception.CategoryNotFoundException;
 import com.example.financetracker.mapper.TransactionMapper;
 import com.example.financetracker.model.Account;
 import com.example.financetracker.model.Transaction;
@@ -13,36 +14,61 @@ import com.example.financetracker.repo.TransactionCategoryRepository;
 import com.example.financetracker.repo.TransactionRepository;
 import com.example.financetracker.repo.UserRepository;
 import com.example.financetracker.specifictation.TransactionCategorySpecifications;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-
+/**
+ * Service responsible for creating and managing financial transactions.
+ * Handles category assignment (manual or AI-based), balance updates,
+ * and persistence of transaction data.
+ */
 @Service
 @AllArgsConstructor
 public class TransactionService {
-    private final TransactionRepository transactionRepository;
     private final TransactionCategorizationService categorizationService;
+
+    private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
     private final TransactionCategoryRepository transactionCategoryRepository;
+
     private final TransactionMapper transactionMapper;
 
+    private static final Logger log = LoggerFactory.getLogger(TransactionService.class);
 
+    /**
+     * Creates a new transaction and updates the account balance.
+     *
+     * @param request the transaction details (amount, name, category, accountId)
+     * @param userId  the ID of the user creating the transaction
+     * @return the saved transaction as a response DTO
+     */
+    @Transactional
     public TransactionResponse createTransaction(TransactionRequest request, Long userId) {
         Transaction transaction = transactionMapper.toEntity(request);
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> {
+                    log.error("User not found: userId={}", userId);
+                    return new RuntimeException("User not found");
+                });
+        log.info("Creating transaction for user {}, name={}, amount={}", userId, user.getUserCredentials().getUsername(), request.getAmount());
         transaction.setUser(user);
-        Account account = accountRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        Account account = accountRepository.findById(request.getAccountId())
+                .orElseThrow(() -> {
+                    log.error("Account not found: accountId={}", request.getAccountId());
+                    return new RuntimeException("User not found");
+                });
 
-        // Auto-categorization is enabled
         if (Boolean.TRUE.equals(account.getAutoCategorization())) {
+            log.info("Auto-categorization enabled. Predicting category for '{}'", request.getName());
             try {
                 CategoryPredictionResponse prediction =
                         categorizationService.predictCategory(request.getName());
-
                 if (prediction != null && prediction.getCategoryName() != null && !prediction.getCategoryName().isBlank()) {
+                    log.info("Predicted category '{}'", prediction.getCategoryName());
                     transaction.setTransactionCategory(
                             transactionCategoryRepository.findOne(TransactionCategorySpecifications.byCategoryNameAndUserId(prediction.getCategoryName(), account.getId()))
                                     .orElseGet(() -> {
@@ -57,16 +83,22 @@ public class TransactionService {
                 }
             } catch (Exception e) {
                 // AI Service Failure
-                System.err.println("Auto-categorization failed: " + e.getMessage());
+                log.error("Auto-categorization failed: {}", e.getMessage());
             }
             // Manual categorization
         } else if (request.getCategoryId() != null) {
-            transaction.setTransactionCategory(
-                    transactionCategoryRepository.findById(request.getCategoryId())
-                            .orElseThrow(() -> new RuntimeException("Category not found"))
-            );
+            TransactionCategory category = transactionCategoryRepository
+                    .findById(request.getCategoryId())
+                    .orElseThrow(() -> {
+                        log.error("Category not found: categoryId={}", request.getCategoryId());
+                        return new CategoryNotFoundException(request.getCategoryId());
+                    });
+            transaction.setTransactionCategory(category);
         }
         Transaction savedTransaction = transactionRepository.save(transaction);
+        account.setBalance(account.getBalance().add(transaction.getAmount()));
+        log.debug("Updated account balance for accountId={} -> newBalance={}",
+                account.getId(), account.getBalance());
         return transactionMapper.toResponse(savedTransaction);
     }
 }
