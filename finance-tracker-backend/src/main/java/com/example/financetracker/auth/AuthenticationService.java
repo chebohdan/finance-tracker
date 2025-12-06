@@ -1,6 +1,5 @@
 package com.example.financetracker.auth;
 
-import com.example.financetracker.config.JwtService;
 import com.example.financetracker.model.ERole;
 import com.example.financetracker.model.RefreshToken;
 import com.example.financetracker.model.User;

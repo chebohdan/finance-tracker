@@ -1,4 +1,4 @@
-package com.example.financetracker.config;
+package com.example.financetracker.auth;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;

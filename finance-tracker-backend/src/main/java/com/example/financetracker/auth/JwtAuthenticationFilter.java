@@ -1,4 +1,4 @@
-package com.example.financetracker.config;
+package com.example.financetracker.auth;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
