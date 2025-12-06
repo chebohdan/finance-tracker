@@ -7,6 +7,7 @@ import com.example.financetracker.service.AccountInvitationsService;
 import com.example.financetracker.service.AccountService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,9 +26,10 @@ public class AccountsController {
         return ResponseEntity.ok(accountResponse);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<AccountResponse> getAccountById(@AuthenticationPrincipal UserCredentials userCredentials, @PathVariable Long id) {
-        AccountResponse accountResponse = accountService.getAccountById(userCredentials.getId(), id);
+    @GetMapping("/{accountId}")
+    @PreAuthorize("@accountSecurity.canView(#userCredentials.id, #accountId)")
+    public ResponseEntity<AccountResponse> getAccountById(@AuthenticationPrincipal UserCredentials userCredentials, @PathVariable Long accountId) {
+        AccountResponse accountResponse = accountService.getAccountById(userCredentials.getId(), accountId);
         return ResponseEntity.ok(accountResponse);
     }
 
@@ -37,9 +39,10 @@ public class AccountsController {
         return ResponseEntity.ok(accountResponse);
     }
 
-    @PatchMapping("/{id}/auto-categorization")
-    public ResponseEntity<AutoCategorizationUpdateResponse> updateAutoCategorization(@AuthenticationPrincipal UserCredentials userCredentials, @PathVariable Long id, @RequestBody AutoCategorizationUpdateRequest autoCategorizationUpdateRequest) {
-        AutoCategorizationUpdateResponse autoCategorizationUpdateResponse = accountService.updateAutoCategorization(userCredentials.getId(), id, autoCategorizationUpdateRequest);
+    @PatchMapping("/{accountId}/auto-categorization")
+    @PreAuthorize("@accountSecurity.canEdit(#userCredentials.id, #accountId)")
+    public ResponseEntity<AutoCategorizationUpdateResponse> updateAutoCategorization(@AuthenticationPrincipal UserCredentials userCredentials, @PathVariable Long accountId, @RequestBody AutoCategorizationUpdateRequest autoCategorizationUpdateRequest) {
+        AutoCategorizationUpdateResponse autoCategorizationUpdateResponse = accountService.updateAutoCategorization(userCredentials.getId(), accountId, autoCategorizationUpdateRequest);
         return ResponseEntity.ok(autoCategorizationUpdateResponse);
     }
 }

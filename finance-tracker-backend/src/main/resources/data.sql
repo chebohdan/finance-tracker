@@ -43,9 +43,12 @@ INSERT INTO account (name, balance, owner_id, auto_categorization) VALUES
 ('Emergency Fund', 2000, 1, false);
 
 INSERT INTO user_account (user_id, account_id, role) VALUES
-(1, 1, 'OWNER'),
-(1, 2, 'OWNER'),
-(1, 3, 'OWNER'), (1, 4, 'OWNER'), (1, 5, 'OWNER');
+(1, 1, 'EDITOR'),
+(1, 2, 'EDITOR'),
+(1, 3, 'EDITOR'),
+(1, 4, 'EDITOR'),
+(1, 5, 'EDITOR'),
+(2, 5, 'EDITOR');
 
 
 INSERT INTO transaction_category (name, account_id) VALUES

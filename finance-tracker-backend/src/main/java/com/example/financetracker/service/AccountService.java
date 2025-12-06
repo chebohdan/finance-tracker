@@ -59,19 +59,6 @@ public class AccountService {
         log.info("Fetching accountId={} for userId={}", accountId, userId);
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException(accountId));
-
-        if (!account.getOwner().getId().equals(userId)) {
-            throw new AccessDeniedException("Access denied");
-        }
-
-        boolean allowed = account.getUserAccounts()
-                .stream()
-                .anyMatch(u -> u.getUser().getId().equals(userId));
-
-        if (!allowed) {
-            throw new AccessDeniedException("Access denied");
-        }
-
         return accountMapper.toResponse(account);
     }
 
@@ -119,14 +106,6 @@ public class AccountService {
 
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException(accountId));
-
-        boolean allowed = account.getUserAccounts()
-                .stream()
-                .anyMatch(u -> u.getUser().getId().equals(userId));
-
-        if (!account.getOwner().getId().equals(userId) && !allowed) {
-            throw new AccessDeniedException("Access denied");
-        }
 
         account.setAutoCategorization(autoCategorizationUpdateRequest.getAutoCategorization());
 
