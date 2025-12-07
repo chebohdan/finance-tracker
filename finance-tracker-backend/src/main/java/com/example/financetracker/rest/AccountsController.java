@@ -1,10 +1,9 @@
 package com.example.financetracker.rest;
 
 import com.example.financetracker.dto.*;
-import com.example.financetracker.model.EAccountInvitationStatus;
 import com.example.financetracker.model.UserCredentials;
-import com.example.financetracker.service.AccountInvitationsService;
 import com.example.financetracker.service.AccountService;
+import com.example.financetracker.service.TransactionService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,6 +18,7 @@ import java.util.List;
 public class AccountsController {
 
     private final AccountService accountService;
+    private final TransactionService transactionService;
 
     @GetMapping
     public ResponseEntity<List<AccountResponse>> getUsersAccounts(@AuthenticationPrincipal UserCredentials userCredentials) {
@@ -44,5 +44,12 @@ public class AccountsController {
     public ResponseEntity<AutoCategorizationUpdateResponse> updateAutoCategorization(@AuthenticationPrincipal UserCredentials userCredentials, @PathVariable Long accountId, @RequestBody AutoCategorizationUpdateRequest autoCategorizationUpdateRequest) {
         AutoCategorizationUpdateResponse autoCategorizationUpdateResponse = accountService.updateAutoCategorization(userCredentials.getId(), accountId, autoCategorizationUpdateRequest);
         return ResponseEntity.ok(autoCategorizationUpdateResponse);
+    }
+
+    @PostMapping("/{accountId}/transactions")
+    @PreAuthorize("@accountSecurity.canEdit(#userCredentials.id, #accountId)")
+    public ResponseEntity<TransactionResponse> createTransaction(@AuthenticationPrincipal UserCredentials userCredentials, @PathVariable Long accountId,  @RequestBody TransactionRequest transactionRequest) {
+        TransactionResponse transactionResponse = transactionService.createTransaction(userCredentials.getId(), accountId, transactionRequest);
+        return ResponseEntity.ok(transactionResponse);
     }
 }

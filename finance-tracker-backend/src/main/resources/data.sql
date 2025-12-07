@@ -55,6 +55,7 @@ INSERT INTO transaction_category (name, account_id) VALUES
 ('Utilities', 1),
 ('Health', 1),
 ('Dining', 1);
+('Dining', 5);
 
 INSERT INTO transaction (name, description, amount, transaction_category_id, account_id, user_id, transaction_date) VALUES
 ('Electricity Bill', 'November electricity', -80.00, 1, 1, 1, '2025-11-11'),

@@ -18,5 +18,4 @@ public class TransactionRequest {
     private BigDecimal amount;
     private LocalDate transactionDate;
     private Long categoryId;
-    private Long accountId;
 }

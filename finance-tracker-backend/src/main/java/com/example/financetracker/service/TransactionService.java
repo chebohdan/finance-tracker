@@ -42,12 +42,13 @@ public class TransactionService {
     /**
      * Creates a new transaction and updates the account balance.
      *
-     * @param request the transaction details (amount, name, category, accountId)
-     * @param userId  the ID of the user creating the transaction
+     * @param userId    the ID of the user creating the transaction
+     * @param accountId account ID
+     * @param request   the transaction details
      * @return the saved transaction as a response DTO
      */
     @Transactional
-    public TransactionResponse createTransaction(TransactionRequest request, Long userId) {
+    public TransactionResponse createTransaction(Long userId, Long accountId, TransactionRequest request) {
         Transaction transaction = transactionMapper.toEntity(request);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
@@ -56,9 +57,9 @@ public class TransactionService {
                 });
         log.info("Creating transaction for user {}, name={}, amount={}", userId, user.getUserCredentials().getUsername(), request.getAmount());
         transaction.setUser(user);
-        Account account = accountRepository.findById(request.getAccountId())
+        Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> {
-                    log.error("Account not found: accountId={}", request.getAccountId());
+                    log.error("Account not found: accountId={}",accountId);
                     return new RuntimeException("User not found");
                 });
 
