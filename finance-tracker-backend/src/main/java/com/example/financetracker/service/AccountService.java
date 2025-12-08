@@ -16,7 +16,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -49,14 +48,12 @@ public class AccountService {
     /**
      * Retrieves a single account by its ID
      *
-     * @param userId    the ID of the user
      * @param accountId the ID of the account
      * @return the account response DTO
-     * @throws AccessDeniedException    if the user does not have access
      * @throws AccountNotFoundException if the account does not exist
      */
-    public AccountResponse getAccountById(Long userId, Long accountId) {
-        log.info("Fetching accountId={} for userId={}", accountId, userId);
+    public AccountResponse getAccountById(Long accountId) {
+        log.info("Fetching accountId={}", accountId);
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException(accountId));
         return accountMapper.toResponse(account);
@@ -88,21 +85,17 @@ public class AccountService {
     /**
      * Updates the auto-categorization setting of an account.
      *
-     * @param userId                          the ID of the user performing the update
      * @param accountId                       the ID of the account to update
      * @param autoCategorizationUpdateRequest the request containing the new setting
      * @return the response DTO with the updated setting
-     * @throws AccessDeniedException    if the user does not have permission
      * @throws AccountNotFoundException if the account does not exist
-     * @throws RuntimeException         if the update fails
      */
     @Transactional
     public AutoCategorizationUpdateResponse updateAutoCategorization(
-            Long userId,
             Long accountId,
             AutoCategorizationUpdateRequest autoCategorizationUpdateRequest
     ) {
-        log.info("Updating auto-categorization for accountId={} by userId={}", accountId, userId);
+        log.info("Updating auto-categorization for accountId={}", accountId);
 
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException(accountId));
@@ -115,11 +108,25 @@ public class AccountService {
         );
 
         if (updatedRows == 0) {
-            log.error("Failed to update auto-categorization for accountId={}", accountId);
-            throw new RuntimeException("Update failed");
+            throw new AccountNotFoundException(accountId);
         }
 
         log.info("Auto-categorization updated for accountId={} to {}", accountId, autoCategorizationUpdateRequest.getAutoCategorization());
         return new AutoCategorizationUpdateResponse(autoCategorizationUpdateRequest.getAutoCategorization());
+    }
+
+    /**
+     * Deletes an account.
+     *
+     * @param accountId the ID of the account to delete
+     * @throws AccountNotFoundException if the account does not exist
+     */
+    public void deleteAccount(Long accountId) {
+        log.info("Deleting account with accountId={}", accountId);
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new AccountNotFoundException(accountId));
+        log.info("Account found. Proceeding with deletion. OwnerId={}", account.getOwner().getId());
+        accountRepository.delete(account);
+        log.info("Account with accountId={} successfully deleted", accountId);
     }
 }
