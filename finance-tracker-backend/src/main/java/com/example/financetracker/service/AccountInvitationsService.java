@@ -104,7 +104,6 @@ public class AccountInvitationsService {
         accountInvitation.setInviter(inviter);
         accountInvitation.setInvitee(invitee);
         accountInvitation.setAccount(account);
-        accountInvitation.setRole(accountInvitationRequest.getRole());
         accountInvitation.setStatus(EAccountInvitationStatus.PENDING);
         accountInvitation.setCreatedAt(LocalDateTime.now());
 

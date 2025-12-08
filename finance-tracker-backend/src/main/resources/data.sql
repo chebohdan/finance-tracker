@@ -42,19 +42,19 @@ INSERT INTO account (name, balance, owner_id, auto_categorization) VALUES
 ('Project X', 750, 1, true),
 ('Emergency Fund', 2000, 1, false);
 
-INSERT INTO user_account (user_id, account_id, role) VALUES
-(1, 1, 'EDITOR'),
-(1, 2, 'EDITOR'),
-(1, 3, 'EDITOR'),
-(1, 4, 'EDITOR'),
-(1, 5, 'EDITOR'),
-(2, 5, 'EDITOR');
+INSERT INTO user_account (user_id, account_id) VALUES
+(1, 1),
+(1, 2),
+(1, 3),
+(1, 4),
+(1, 5),
+(2, 5);
 
 
 INSERT INTO transaction_category (name, account_id) VALUES
 ('Utilities', 1),
 ('Health', 1),
-('Dining', 1);
+('Dining', 1),
 ('Dining', 5);
 
 INSERT INTO transaction (name, description, amount, transaction_category_id, account_id, user_id, transaction_date) VALUES
@@ -67,36 +67,36 @@ INSERT INTO transaction (name, description, amount, transaction_category_id, acc
 ('Internet Bill', 'Monthly internet', -55.00, 1, 1, 1, '2025-11-05'),
 ('Dentist Visit', 'Routine dental cleaning', 120.00, 2, 1, 1, '2025-11-03');
 
-INSERT INTO account_invitation (inviter_id, invitee_id, account_id, status, role, created_at)
+INSERT INTO account_invitation (inviter_id, invitee_id, account_id, status, created_at)
 VALUES
 -- Personal account (1)
-(1, 2, 1, 'PENDING', 'EDITOR', '2025-12-01 10:00:00'),
-(1, 2, 2, 'PENDING', 'EDITOR', '2025-12-01 10:05:00'),
-(1, 3, 1, 'ACCEPTED', 'EDITOR','2025-12-01 09:30:00'),
-(1, 3, 2, 'ACCEPTED', 'EDITOR', '2025-12-01 09:45:00'),
-(3, 1, 1, 'PENDING', 'EDITOR', '2025-12-01 11:00:00'),
-(1, 4, 1, 'PENDING', 'EDITOR', '2025-12-01 12:00:00'),
-(1, 5, 1, 'PENDING', 'EDITOR', '2025-12-01 12:30:00'),
-(1, 6, 1, 'PENDING', 'EDITOR', '2025-12-01 13:00:00'),
-(7, 1, 1, 'PENDING', 'EDITOR', '2025-12-01 14:00:00'),
+(1, 2, 1, 'PENDING', '2025-12-01 10:00:00'),
+(1, 2, 2, 'PENDING', '2025-12-01 10:05:00'),
+(1, 3, 1, 'ACCEPTED','2025-12-01 09:30:00'),
+(1, 3, 2, 'ACCEPTED', '2025-12-01 09:45:00'),
+(3, 1, 1, 'PENDING', '2025-12-01 11:00:00'),
+(1, 4, 1, 'PENDING', '2025-12-01 12:00:00'),
+(1, 5, 1, 'PENDING', '2025-12-01 12:30:00'),
+(1, 6, 1, 'PENDING', '2025-12-01 13:00:00'),
+(7, 1, 1, 'PENDING', '2025-12-01 14:00:00'),
 
 -- Family account (2)
-(1, 2, 2, 'ACCEPTED', 'EDITOR', '2025-12-01 09:50:00'),
-(3, 1, 2, 'PENDING', 'EDITOR', '2025-12-01 11:30:00'),
-(1, 4, 2, 'PENDING', 'EDITOR', '2025-12-01 12:15:00'),
+(1, 2, 2, 'ACCEPTED', '2025-12-01 09:50:00'),
+(3, 1, 2, 'PENDING', '2025-12-01 11:30:00'),
+(1, 4, 2, 'PENDING', '2025-12-01 12:15:00'),
 
 -- Vacation Fund (3)
-(1, 5, 3, 'PENDING', 'EDITOR', '2025-12-01 13:30:00'),
-(6, 1, 3, 'REJECTED', 'EDITOR', '2025-12-01 14:00:00'),
-(1, 7, 3, 'PENDING', 'EDITOR', '2025-12-01 14:30:00'),
-(1, 8, 3, 'PENDING', 'EDITOR', '2025-12-01 15:00:00'),
+(1, 5, 3, 'PENDING', '2025-12-01 13:30:00'),
+(6, 1, 3, 'REJECTED', '2025-12-01 14:00:00'),
+(1, 7, 3, 'PENDING', '2025-12-01 14:30:00'),
+(1, 8, 3, 'PENDING', '2025-12-01 15:00:00'),
 
 -- Project X (4)
-(1, 9, 4, 'PENDING', 'EDITOR', '2025-12-01 15:30:00'),
-(1, 10, 4, 'PENDING', 'EDITOR', '2025-12-01 16:00:00'),
-(1, 11, 4, 'REJECTED', 'EDITOR', '2025-12-01 16:30:00'),
+(1, 9, 4, 'PENDING', '2025-12-01 15:30:00'),
+(1, 10, 4, 'PENDING', '2025-12-01 16:00:00'),
+(1, 11, 4, 'REJECTED', '2025-12-01 16:30:00'),
 
 -- Emergency Fund (5)
-(1, 12, 5, 'PENDING', 'EDITOR', '2025-12-01 17:00:00'),
-(1, 8, 5, 'PENDING', 'EDITOR', '2025-12-01 17:30:00'),
-(1, 6, 5, 'PENDING', 'EDITOR', '2025-12-01 18:00:00');
+(1, 12, 5, 'PENDING', '2025-12-01 17:00:00'),
+(1, 8, 5, 'PENDING', '2025-12-01 17:30:00'),
+(1, 6, 5, 'PENDING', '2025-12-01 18:00:00');

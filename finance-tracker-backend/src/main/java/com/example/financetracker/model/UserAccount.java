@@ -23,8 +23,4 @@ public class UserAccount {
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("accountId")
     private Account account;
-
-    @Column(name = "role")
-    @Enumerated(EnumType.STRING)
-    private EAccountRole accountRole;
 }

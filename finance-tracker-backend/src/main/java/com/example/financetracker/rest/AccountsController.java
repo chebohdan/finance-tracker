@@ -27,9 +27,9 @@ public class AccountsController {
     }
 
     @GetMapping("/{accountId}")
-    @PreAuthorize("@accountSecurity.canView(#userCredentials.id, #accountId)")
+    @PreAuthorize("@accountSecurity.hasAccess(#userCredentials.id, #accountId)")
     public ResponseEntity<AccountResponse> getAccountById(@AuthenticationPrincipal UserCredentials userCredentials, @PathVariable Long accountId) {
-        AccountResponse accountResponse = accountService.getAccountById(userCredentials.getId(), accountId);
+        AccountResponse accountResponse = accountService.getAccountById(accountId);
         return ResponseEntity.ok(accountResponse);
     }
 
@@ -40,16 +40,23 @@ public class AccountsController {
     }
 
     @PatchMapping("/{accountId}/auto-categorization")
-    @PreAuthorize("@accountSecurity.canEdit(#userCredentials.id, #accountId)")
+    @PreAuthorize("@accountSecurity.hasAccess(#userCredentials.id, #accountId)")
     public ResponseEntity<AutoCategorizationUpdateResponse> updateAutoCategorization(@AuthenticationPrincipal UserCredentials userCredentials, @PathVariable Long accountId, @RequestBody AutoCategorizationUpdateRequest autoCategorizationUpdateRequest) {
-        AutoCategorizationUpdateResponse autoCategorizationUpdateResponse = accountService.updateAutoCategorization(userCredentials.getId(), accountId, autoCategorizationUpdateRequest);
+        AutoCategorizationUpdateResponse autoCategorizationUpdateResponse = accountService.updateAutoCategorization(accountId, autoCategorizationUpdateRequest);
         return ResponseEntity.ok(autoCategorizationUpdateResponse);
     }
 
     @PostMapping("/{accountId}/transactions")
-    @PreAuthorize("@accountSecurity.canEdit(#userCredentials.id, #accountId)")
+    @PreAuthorize("@accountSecurity.hasAccess(#userCredentials.id, #accountId)")
     public ResponseEntity<TransactionResponse> createTransaction(@AuthenticationPrincipal UserCredentials userCredentials, @PathVariable Long accountId,  @RequestBody TransactionRequest transactionRequest) {
         TransactionResponse transactionResponse = transactionService.createTransaction(userCredentials.getId(), accountId, transactionRequest);
         return ResponseEntity.ok(transactionResponse);
+    }
+
+    @DeleteMapping ("/{accountId}")
+    @PreAuthorize("@accountSecurity.isOwner(#userCredentials.id, #accountId)")
+    public ResponseEntity<Void> deleteAccount(@AuthenticationPrincipal UserCredentials userCredentials, @PathVariable Long accountId) {
+        accountService.deleteAccount(accountId);
+        return ResponseEntity.noContent().build();
     }
 }

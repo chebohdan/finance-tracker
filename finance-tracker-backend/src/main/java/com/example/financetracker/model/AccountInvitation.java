@@ -31,10 +31,6 @@ public class AccountInvitation extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private EAccountInvitationStatus status;
 
-    @Column(name = "role")
-    @Enumerated(EnumType.STRING)
-    private EAccountRole role;
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 }
