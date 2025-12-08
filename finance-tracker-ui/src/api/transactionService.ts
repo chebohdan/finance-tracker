@@ -3,10 +3,11 @@ import { api } from "./api";
 
 function transactionService() {
   const createTransaction = async (
+    accountId: number,
     transactionRequest: TransactionRequest
   ): Promise<TransactionResponse> => {
     const { data } = await api.post<TransactionResponse>(
-      "/transactions",
+      `/accounts/${accountId}/transactions`,
       transactionRequest
     );
     return data;

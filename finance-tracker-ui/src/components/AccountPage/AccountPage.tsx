@@ -119,7 +119,7 @@ function AccountPage() {
   // Handlers
   //********************
   const onTransactionSubmit = (transactionRequest: TransactionRequest) => {
-    createTransaction(transactionRequest)
+    createTransaction(Number(id), transactionRequest)
       .then((transaction) => {
         setTransactions((prev) => [transaction, ...prev]);
         resetTransaction({

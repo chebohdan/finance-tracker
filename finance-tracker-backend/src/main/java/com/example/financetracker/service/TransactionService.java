@@ -96,8 +96,9 @@ public class TransactionService {
                     });
             transaction.setTransactionCategory(category);
         }
-        Transaction savedTransaction = transactionRepository.save(transaction);
+        transaction.setAccount(account);
         account.setBalance(account.getBalance().add(transaction.getAmount()));
+        Transaction savedTransaction = transactionRepository.save(transaction);
         log.debug("Updated account balance for accountId={} -> newBalance={}",
                 account.getId(), account.getBalance());
         return transactionMapper.toResponse(savedTransaction);
