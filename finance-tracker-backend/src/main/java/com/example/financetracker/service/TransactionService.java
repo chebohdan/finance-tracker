@@ -71,7 +71,7 @@ public class TransactionService {
                 if (prediction != null && prediction.getCategoryName() != null && !prediction.getCategoryName().isBlank()) {
                     log.info("Predicted category '{}'", prediction.getCategoryName());
                     transaction.setTransactionCategory(
-                            transactionCategoryRepository.findOne(TransactionCategorySpecifications.byCategoryNameAndUserId(prediction.getCategoryName(), account.getId()))
+                            transactionCategoryRepository.findOne(TransactionCategorySpecifications.byCategoryNameAndAccountId(prediction.getCategoryName(), account.getId()))
                                     .orElseGet(() -> {
                                         TransactionCategory transactionCategory = TransactionCategory
                                                 .builder()
