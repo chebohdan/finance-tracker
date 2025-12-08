@@ -2,6 +2,7 @@ export type AccountResponse = {
   id: number;
   name: string;
   balance: number;
+  owner: UserResponse;
   transactions: TransactionResponse[];
   transactionCategories: TransactionCategoryResponse[];
   userAccounts: UserAccountResponse[];

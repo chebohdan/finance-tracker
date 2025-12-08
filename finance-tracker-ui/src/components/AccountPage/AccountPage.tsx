@@ -24,6 +24,7 @@ import TransactionsTable from "./TransactionsTable";
 import AccountUsers from "./AccountUsers";
 import Invitations from "./InvitationForm";
 import accountInvitationsService from "../../api/accountInvitationsService";
+import useAuth from "../../hooks/useAuth";
 
 function AccountPage() {
   //********************
@@ -39,6 +40,11 @@ function AccountPage() {
   // Navigation
   //********************
   const { id } = useParams() as { id: string };
+
+  //********************
+  // Auth
+  //********************
+  const { userId } = useAuth();
 
   //********************
   // API services
@@ -156,6 +162,8 @@ function AccountPage() {
     account?.transactionCategories ?? []
   ).map((cat) => ({ label: cat.name, value: String(cat.id) }));
 
+  const isOwner = userId === account?.owner?.id;
+
   //********************
   // Render
   //********************
@@ -185,12 +193,14 @@ function AccountPage() {
           {/* Users Section */}
           <div className="lg:col-span-1 space-y-6">
             <AccountUsers users={account?.userAccounts ?? []} />
-            <Invitations
-              register={registerInvite}
-              errors={errorsInvite}
-              onSubmit={onInvitationSubmit}
-              handleSubmit={handleSubmitInvite}
-            />
+            {isOwner && (
+              <Invitations
+                register={registerInvite}
+                errors={errorsInvite}
+                onSubmit={onInvitationSubmit}
+                handleSubmit={handleSubmitInvite}
+              />
+            )}
           </div>
         </div>
 

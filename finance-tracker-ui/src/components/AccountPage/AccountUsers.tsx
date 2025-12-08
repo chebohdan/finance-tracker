@@ -61,40 +61,6 @@ export default function AccountUsers({ users }: Readonly<AccountUsersProps>) {
           </table>
         </div>
       </div>
-
-      {/* Invite User Form */}
-      <div className="border-t border-[var(--color-dark-surface)] pt-4">
-        <h3 className="text-md font-medium text-[var(--color-dark-text)] mb-2">
-          Invite User
-        </h3>
-        {/*
-        <form
-          className="flex flex-col sm:flex-row gap-2"
-          onSubmit={handleSubmit(onInvite)}
-        >
-          <input
-            className="flex-1 p-2 rounded-lg bg-[var(--color-dark-bg)] text-[var(--color-dark-text)]"
-            type="email"
-            placeholder="User email"
-            {...register("email", { required: true })}
-          />
-          <select
-            className="p-2 rounded-lg bg-[var(--color-dark-bg)] text-[var(--color-dark-text)]"
-            {...register("role", { required: true })}
-          >
-            <option value="">Select role</option>
-            <option value="Viewer">Viewer</option>
-            <option value="Editor">Editor</option>
-            <option value="Admin">Admin</option>
-          </select>
-          <button
-            type="submit"
-            className="bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-medium py-2 px-4 rounded-lg transition-colors"
-          >
-            Invite
-          </button>
-        </form>*/}
-      </div>
     </div>
   );
 }
