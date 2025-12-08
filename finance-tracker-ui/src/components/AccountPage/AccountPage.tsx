@@ -136,7 +136,6 @@ function AccountPage() {
         console.log(response);
         resetInvite({
           inviteeUsername: "",
-          role: "VIEWER",
         });
       })
       .catch((error) => console.error("Failed to create transaction:", error));

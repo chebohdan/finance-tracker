@@ -16,13 +16,11 @@ export type AccountInvitationResponse = {
   accountName: string;
   accountId: number;
   createdAt: string | null;
-  role: EAccountRole;
 };
 
 export type AccountInvitationRequest = {
   inviteeUsername: string;
   accountId: number;
-  role: EAccountRole;
 };
 
 export type AccountInvitationsResponse = {
@@ -32,7 +30,6 @@ export type AccountInvitationsResponse = {
 };
 
 export type EAccountInvitationStatus = "PENDING" | "ACCEPTED" | "REJECTED";
-export type EAccountRole = "OWNER" | "VIEWER" | "EDITOR";
 
 export type TransactionResponse = {
   id: number;

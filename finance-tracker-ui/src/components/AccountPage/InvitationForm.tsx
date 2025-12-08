@@ -5,7 +5,6 @@ import type {
 } from "react-hook-form";
 import type { AccountInvitationRequest } from "../../types/types";
 import FormInput from "../Inputs/FormInput";
-import FormSelectInput from "../Inputs/FormSelectInput";
 
 type InvitationFormProps = {
   register: UseFormRegister<AccountInvitationRequest>;
@@ -23,12 +22,6 @@ export default function InvitationForm({
   handleSubmit,
   onSubmit,
 }: Readonly<InvitationFormProps>) {
-  const selectRoles = [
-    { value: "OWNER", label: "Owner" },
-    { value: "EDITOR", label: "Editor" },
-    { value: "VIEWER", label: "Viewer" },
-  ];
-
   return (
     <div className=" rounded-lg p-6 border-2 border-[var(--color-dark-surface)] space-y-6">
       {/* Invite User Form */}
@@ -48,14 +41,6 @@ export default function InvitationForm({
               placeholder="Enter username"
               name="inviteeUsername"
               type="text"
-            />
-            <FormSelectInput
-              options={selectRoles}
-              register={register}
-              errors={errors}
-              name={"role"}
-              label="Select role"
-              disabled={false}
             />
 
             <button
