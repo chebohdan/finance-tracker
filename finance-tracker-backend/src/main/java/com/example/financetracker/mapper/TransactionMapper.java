@@ -12,5 +12,6 @@ public interface TransactionMapper {
     public Transaction toEntity(TransactionRequest request);
 
     @Mapping(source = "transactionCategory.name", target = "categoryName")
+    @Mapping(source = "transactionCategory.id", target = "categoryId")
     public TransactionResponse toResponse(Transaction transaction);
 }

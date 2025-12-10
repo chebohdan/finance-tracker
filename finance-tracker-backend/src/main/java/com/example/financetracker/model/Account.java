@@ -30,15 +30,6 @@ public class Account extends BaseEntity {
     @Column(name = "balance", nullable = false)
     private BigDecimal balance;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "owner_id", nullable = false)
-    private User owner;
-
-    @NotNull
-    @Column(name = "auto_categorization", nullable = false)
-    private Boolean autoCategorization;
-
     @OneToMany(mappedBy = "account")
     private List<Transaction> transactions;
 

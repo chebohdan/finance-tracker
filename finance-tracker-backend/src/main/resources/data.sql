@@ -35,20 +35,20 @@ INSERT INTO user_role (user_id, role) VALUES
 (4, 'USER'), (5, 'USER'), (6, 'USER'), (7, 'USER'), (8, 'USER'),
 (9, 'USER'), (10, 'USER'), (11, 'USER'), (12, 'USER');
 
-INSERT INTO account (name, balance, owner_id, auto_categorization) VALUES
-('personal account', 500, 1, true),
-('family account', 300, 1, true),
-('Vacation Fund', 1000, 1, true),
-('Project X', 750, 1, true),
-('Emergency Fund', 2000, 1, false);
+INSERT INTO account (name, balance) VALUES
+('personal account', 500),
+('family account', 300),
+('Vacation Fund', 1000),
+('Project X', 750),
+('Emergency Fund', 2000);
 
-INSERT INTO user_account (user_id, account_id) VALUES
-(1, 1),
-(1, 2),
-(1, 3),
-(1, 4),
-(1, 5),
-(2, 5);
+INSERT INTO user_account (user_id, account_id, role) VALUES
+(1, 1, 'OWNER'),
+(1, 2, 'OWNER'),
+(1, 3, 'OWNER'),
+(1, 4, 'OWNER'),
+(1, 5, 'OWNER'),
+(2, 5, 'USER');
 
 
 INSERT INTO transaction_category (name, account_id) VALUES

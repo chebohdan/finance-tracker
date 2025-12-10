@@ -1,11 +1,24 @@
+export type AccountRequest = {
+  name: string;
+  balance: number;
+};
+
 export type AccountResponse = {
   id: number;
   name: string;
   balance: number;
-  owner: UserResponse;
   transactions: TransactionResponse[];
   transactionCategories: TransactionCategoryResponse[];
   userAccounts: UserAccountResponse[];
+};
+
+export type UserAccountResponse = {
+  userId: number;
+  accountId: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: "OWNER" | "USER";
   autoCategorization: boolean;
 };
 
@@ -62,19 +75,6 @@ export type UserResponse = {
   lastName: string;
   email: string;
   birthday: string;
-};
-
-export type UserAccountResponse = {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  accountRole: boolean;
-};
-
-export type AccountRequest = {
-  name: string;
-  balance: number;
 };
 
 export type AutoCategorizationUpdateResponse = {

@@ -45,7 +45,4 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "invitee")
     private List<AccountInvitation> accountInvitationInvitee;
-
-    @OneToMany(mappedBy = "owner")
-    private List<Account> accounts;
 }

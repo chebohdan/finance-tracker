@@ -42,7 +42,7 @@ public class AccountsController {
     @PatchMapping("/{accountId}/auto-categorization")
     @PreAuthorize("@accountSecurity.hasAccess(#userCredentials.id, #accountId)")
     public ResponseEntity<AutoCategorizationUpdateResponse> updateAutoCategorization(@AuthenticationPrincipal UserCredentials userCredentials, @PathVariable Long accountId, @RequestBody AutoCategorizationUpdateRequest autoCategorizationUpdateRequest) {
-        AutoCategorizationUpdateResponse autoCategorizationUpdateResponse = accountService.updateAutoCategorization(accountId, autoCategorizationUpdateRequest);
+        AutoCategorizationUpdateResponse autoCategorizationUpdateResponse = accountService.updateAutoCategorization(accountId, userCredentials.getId(), autoCategorizationUpdateRequest);
         return ResponseEntity.ok(autoCategorizationUpdateResponse);
     }
 

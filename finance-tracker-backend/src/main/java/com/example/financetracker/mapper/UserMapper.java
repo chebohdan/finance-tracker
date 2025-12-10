@@ -8,7 +8,8 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
-    @Mapping(source = "user.id", target = "id")
+    @Mapping(source = "userAccountId.userId", target = "userId")
+    @Mapping(source = "userAccountId.accountId", target = "accountId")
     @Mapping(source = "user.firstName", target = "firstName")
     @Mapping(source = "user.lastName", target = "lastName")
     @Mapping(source = "user.email", target = "email")

@@ -40,7 +40,7 @@ export default function AccountUsers({ users }: Readonly<AccountUsersProps>) {
             <tbody>
               {users.map((user) => (
                 <tr
-                  key={user.id}
+                  key={user.userId}
                   className="border-b border-[var(--color-dark-surface)] hover:bg-[var(--color-dark-surface)]/50"
                 >
                   <td className="px-4 py-2 text-[var(--color-dark-text)]">
@@ -53,7 +53,7 @@ export default function AccountUsers({ users }: Readonly<AccountUsersProps>) {
                     {user.email}
                   </td>
                   <td className="px-4 py-2 text-[var(--color-dark-text)]">
-                    {user.accountRole}
+                    {user.role}
                   </td>
                 </tr>
               ))}

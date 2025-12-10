@@ -35,6 +35,9 @@ function AccountPage() {
   const [transactions, setTransactions] = useState<TransactionResponse[]>([]);
   const [autoCategorizationEnabled, setAutoCategorizationEnabled] =
     useState<boolean>(false);
+  const [categoryOptions, setCategoryOptions] = useState<
+    FormSelectInputOption[]
+  >([]);
 
   //********************
   // Navigation
@@ -78,6 +81,20 @@ function AccountPage() {
   } = useForm<AccountInvitationRequest>({});
 
   //********************
+  // Prepare category options for select input
+  //********************
+  useEffect(() => {
+    if (account?.transactionCategories) {
+      setCategoryOptions(
+        account.transactionCategories.map((cat) => ({
+          label: cat.name,
+          value: String(cat.id),
+        }))
+      );
+    }
+  }, [account?.transactionCategories]);
+
+  //********************
   // Fetch account on mount
   //********************
   useEffect(() => {
@@ -87,7 +104,13 @@ function AccountPage() {
         const data = await getAccountById(Number(id));
         setAccount(data);
         setTransactions(data.transactions ?? []);
-        setAutoCategorizationEnabled(data.autoCategorization);
+
+        const currentUserAccount = data.userAccounts?.find(
+          (ua) => ua.userId === userId
+        );
+        setAutoCategorizationEnabled(
+          currentUserAccount?.autoCategorization ?? false
+        );
       } catch (err) {
         console.error("Failed to load account:", err);
       } finally {
@@ -96,7 +119,7 @@ function AccountPage() {
     };
 
     fetchAccount();
-  }, [id]);
+  }, [id, userId]);
 
   //********************
   // Toggle auto-categorization
@@ -118,19 +141,45 @@ function AccountPage() {
   //********************
   // Handlers
   //********************
-  const onTransactionSubmit = (transactionRequest: TransactionRequest) => {
-    createTransaction(Number(id), transactionRequest)
-      .then((transaction) => {
-        setTransactions((prev) => [transaction, ...prev]);
-        resetTransaction({
-          name: "",
-          amount: "",
-          categoryId: "",
-          description: "",
-          transactionDate: new Date().toISOString().split("T")[0],
-        });
-      })
-      .catch((error) => console.error("Failed to create transaction:", error));
+  const onTransactionSubmit = async (
+    transactionRequest: TransactionRequest
+  ) => {
+    try {
+      const transaction = await createTransaction(
+        Number(id),
+        transactionRequest
+      );
+
+      // Update transactions state
+      setTransactions((prev) => [transaction, ...prev]);
+
+      // If the transaction has a new category, update categoryOptions
+      if (transaction.categoryName) {
+        const categoryExists = categoryOptions.some(
+          (cat) => cat.value === transaction.categoryId
+        );
+        if (!categoryExists) {
+          setCategoryOptions((prev) => [
+            ...prev,
+            {
+              label: transaction.categoryName,
+              value: String(transaction.categoryId),
+            },
+          ]);
+        }
+      }
+
+      // Reset form
+      resetTransaction({
+        name: "",
+        amount: "",
+        categoryId: "",
+        description: "",
+        transactionDate: new Date().toISOString().split("T")[0],
+      });
+    } catch (error) {
+      console.error("Failed to create transaction:", error);
+    }
   };
 
   const onInvitationSubmit = (
@@ -155,15 +204,11 @@ function AccountPage() {
     );
   }
 
-  //********************
-  // Prepare category options for select input
-  //********************
-  const categoryOptions: FormSelectInputOption[] = (
-    account?.transactionCategories ?? []
-  ).map((cat) => ({ label: cat.name, value: String(cat.id) }));
+  const isOwner = account?.userAccounts?.some(
+    (ua) => ua.role === "OWNER" && ua.userId === userId
+  );
 
-  const isOwner = userId === account?.owner?.id;
-
+  console.log(account?.userAccounts);
   //********************
   // Render
   //********************

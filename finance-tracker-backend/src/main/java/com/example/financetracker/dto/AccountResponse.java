@@ -16,8 +16,6 @@ public class AccountResponse {
     private Long id;
     private String name;
     private BigDecimal balance;
-    private Boolean autoCategorization;
-    private UserResponse owner;
     private List<TransactionResponse> transactions;
     private List<TransactionCategoryResponse> transactionCategories;
     private List<UserAccountResponse> userAccounts;

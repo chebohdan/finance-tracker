@@ -10,12 +10,9 @@ public class AccountSpecifications {
     }
 
     public static Specification<Account> byUserId(Long userId) {
-        return ((root, query, cb) -> {
-            Join<Account, UserAccount> accountUserJoin = root.join(Account_.USER_ACCOUNTS, JoinType.LEFT);
-            return cb.or(
-                    cb.equal(root.get(Account_.OWNER).get(User_.ID), userId),
-                    cb.equal(accountUserJoin.get(UserAccount_.USER).get(User_.ID), userId)
-            );
-        });
+        return (root, query, cb) -> {
+            Join<Account, UserAccount> userAccountJoin = root.join(Account_.USER_ACCOUNTS, JoinType.LEFT);
+            return cb.equal(userAccountJoin.get(UserAccount_.USER).get(User_.ID), userId);
+        };
     }
 }

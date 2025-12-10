@@ -23,4 +23,11 @@ public class UserAccount {
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("accountId")
     private Account account;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    private EUserAccountRole role;
+
+    @Column(name = "auto_categorization")
+    private Boolean autoCategorization;
 }

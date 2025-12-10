@@ -4,15 +4,10 @@ import com.example.financetracker.dto.CategoryPredictionResponse;
 import com.example.financetracker.dto.TransactionRequest;
 import com.example.financetracker.dto.TransactionResponse;
 import com.example.financetracker.exception.CategoryNotFoundException;
+import com.example.financetracker.exception.UserAccountNotFoundException;
 import com.example.financetracker.mapper.TransactionMapper;
-import com.example.financetracker.model.Account;
-import com.example.financetracker.model.Transaction;
-import com.example.financetracker.model.TransactionCategory;
-import com.example.financetracker.model.User;
-import com.example.financetracker.repo.AccountRepository;
-import com.example.financetracker.repo.TransactionCategoryRepository;
-import com.example.financetracker.repo.TransactionRepository;
-import com.example.financetracker.repo.UserRepository;
+import com.example.financetracker.model.*;
+import com.example.financetracker.repo.*;
 import com.example.financetracker.specifictation.TransactionCategorySpecifications;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -31,6 +26,7 @@ public class TransactionService {
     private final TransactionCategorizationService categorizationService;
 
     private final TransactionRepository transactionRepository;
+    private final UserAccountRepository userAccountRepository;
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
     private final TransactionCategoryRepository transactionCategoryRepository;
@@ -50,31 +46,45 @@ public class TransactionService {
     @Transactional
     public TransactionResponse createTransaction(Long userId, Long accountId, TransactionRequest request) {
         Transaction transaction = transactionMapper.toEntity(request);
+
+        // Fetch user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.error("User not found: userId={}", userId);
                     return new RuntimeException("User not found");
                 });
-        log.info("Creating transaction for user {}, name={}, amount={}", userId, user.getUserCredentials().getUsername(), request.getAmount());
         transaction.setUser(user);
+        log.info("Creating transaction for user {}, name={}, amount={}", userId, user.getUserCredentials().getUsername(), request.getAmount());
+
+        // Fetch account
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> {
-                    log.error("Account not found: accountId={}",accountId);
-                    return new RuntimeException("User not found");
+                    log.error("Account not found: accountId={}", accountId);
+                    return new RuntimeException("Account not found");
                 });
+        transaction.setAccount(account);
 
-        if (Boolean.TRUE.equals(account.getAutoCategorization())) {
-            log.info("Auto-categorization enabled. Predicting category for '{}'", request.getName());
+        // Fetch UserAccount to check auto-categorization for this user
+        UserAccountId userAccountId = new UserAccountId();
+        userAccountId.setUserId(userId);
+        userAccountId.setAccountId(accountId);
+        UserAccount userAccount = userAccountRepository.findById(userAccountId)
+                .orElseThrow(() -> new UserAccountNotFoundException(userId, accountId));
+
+        if (Boolean.TRUE.equals(userAccount.getAutoCategorization())) {
+            log.info("Auto-categorization enabled for userId={} on accountId={}. Predicting category for '{}'",
+                    userId, accountId, request.getName());
             try {
                 CategoryPredictionResponse prediction =
                         categorizationService.predictCategory(request.getName());
                 if (prediction != null && prediction.getCategoryName() != null && !prediction.getCategoryName().isBlank()) {
                     log.info("Predicted category '{}'", prediction.getCategoryName());
                     transaction.setTransactionCategory(
-                            transactionCategoryRepository.findOne(TransactionCategorySpecifications.byCategoryNameAndAccountId(prediction.getCategoryName(), account.getId()))
+                            transactionCategoryRepository.findOne(
+                                            TransactionCategorySpecifications.byCategoryNameAndAccountId(
+                                                    prediction.getCategoryName(), account.getId()))
                                     .orElseGet(() -> {
-                                        TransactionCategory transactionCategory = TransactionCategory
-                                                .builder()
+                                        TransactionCategory transactionCategory = TransactionCategory.builder()
                                                 .name(prediction.getCategoryName())
                                                 .account(account)
                                                 .build();
@@ -83,24 +93,25 @@ public class TransactionService {
                     );
                 }
             } catch (Exception e) {
-                // AI Service Failure
                 log.error("Auto-categorization failed: {}", e.getMessage());
             }
-            // Manual categorization
         } else if (request.getCategoryId() != null) {
-            TransactionCategory category = transactionCategoryRepository
-                    .findById(request.getCategoryId())
+            // Manual categorization
+            TransactionCategory category = transactionCategoryRepository.findById(request.getCategoryId())
                     .orElseThrow(() -> {
                         log.error("Category not found: categoryId={}", request.getCategoryId());
                         return new CategoryNotFoundException(request.getCategoryId());
                     });
             transaction.setTransactionCategory(category);
         }
-        transaction.setAccount(account);
+
+        // Update account balance
         account.setBalance(account.getBalance().add(transaction.getAmount()));
         Transaction savedTransaction = transactionRepository.save(transaction);
-        log.debug("Updated account balance for accountId={} -> newBalance={}",
-                account.getId(), account.getBalance());
+
+        log.debug("Updated account balance for accountId={} -> newBalance={}", account.getId(), account.getBalance());
+
         return transactionMapper.toResponse(savedTransaction);
     }
+
 }
