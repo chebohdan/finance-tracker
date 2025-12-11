@@ -9,6 +9,8 @@ import FormSelectInput, {
   type FormSelectInputOption,
 } from "../Inputs/FormSelectInput";
 import type { TransactionRequest } from "../../types/types";
+import Button from "../Button/Button";
+import { GrTransaction } from "react-icons/gr";
 
 type NewTransactionFormProps = {
   register: UseFormRegister<TransactionRequest>;
@@ -30,20 +32,22 @@ function NewTransactionForm({
   categoryOptions,
 }: Readonly<NewTransactionFormProps>) {
   return (
-    <form>
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-[var(--color-dark-text)]">
-          Add Transaction
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="flex items-center gap-2 text-xl font-semibold text-[var(--color-dark-text)]">
+          <GrTransaction />
+          <span>Add Transaction</span>
         </h2>
         <ToggleCheckbox
           name="autoCategorization"
-          label={"Auto Categorization"}
+          label="Auto Categorization"
           checked={autoCategorizationEnabled}
           handleToggle={toggleAutoCat}
         />
       </div>
 
       <div className="space-y-4">
+        {/* Top row: Name, Amount, Date */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <FormInput<TransactionRequest>
             name="name"
@@ -74,6 +78,7 @@ function NewTransactionForm({
           />
         </div>
 
+        {/* Description */}
         <FormInput<TransactionRequest>
           name="description"
           label="Description"
@@ -82,29 +87,26 @@ function NewTransactionForm({
           register={register}
         />
 
+        {/* Category select */}
         <FormSelectInput
           options={categoryOptions}
-          label="Categories"
+          label="Category"
           register={register}
           name="categoryId"
           disabled={autoCategorizationEnabled}
           registerOptions={{
             validate: (value) => {
-              if (autoCategorizationEnabled || value) {
-                return true;
-              }
+              if (autoCategorizationEnabled || value) return true;
               return "Category is required";
             },
           }}
           errors={errors}
         />
 
-        <button
-          onClick={handleSubmit(onSubmit)}
-          className="mt-3 w-full bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-medium py-2 rounded-lg transition-colors"
-        >
-          Add Transaction
-        </button>
+        {/* Submit button */}
+        <Button type="submit" fullWidth>
+          Add
+        </Button>
       </div>
     </form>
   );

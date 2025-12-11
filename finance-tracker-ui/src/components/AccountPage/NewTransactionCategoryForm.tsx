@@ -5,15 +5,16 @@ import type {
 } from "react-hook-form";
 import type { TransactionCategoryRequest } from "../../types/types";
 import FormInput from "../Inputs/FormInput";
+import Button from "../Button/Button";
 
-type NewTransactionFormProps = {
+type NewTransactionCategoryFormProps = {
   register: UseFormRegister<TransactionCategoryRequest>;
   errors: FieldErrors<TransactionCategoryRequest>;
   handleSubmit: UseFormHandleSubmit<
     TransactionCategoryRequest,
     TransactionCategoryRequest
   >;
-  onSubmit: (transactionRequest: TransactionCategoryRequest) => void;
+  onSubmit: (category: TransactionCategoryRequest) => void;
 };
 
 function NewTransactionCategoryForm({
@@ -21,28 +22,26 @@ function NewTransactionCategoryForm({
   errors,
   handleSubmit,
   onSubmit,
-}: Readonly<NewTransactionFormProps>) {
+}: Readonly<NewTransactionCategoryFormProps>) {
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="mt-4 flex gap-2 items-end"
-    >
-      <FormInput<TransactionCategoryRequest>
-        name="name"
-        label="New Category"
-        placeholder="Enter new category"
-        type="text"
-        register={register}
-        registerOptions={{ required: "Category name is required" }}
-        errors={errors}
-      />
-      <button
-        type="submit"
-        className="bg-blue-500 text-white px-4 py-2 rounded"
+    <div>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col sm:flex-row gap-3 items-end"
       >
-        Add
-      </button>
-    </form>
+        <FormInput<TransactionCategoryRequest>
+          name="name"
+          label="Category Name"
+          placeholder="Enter new category"
+          type="text"
+          register={register}
+          registerOptions={{ required: "Category name is required" }}
+          errors={errors}
+        />
+
+        <Button type="submit">Add</Button>
+      </form>
+    </div>
   );
 }
 

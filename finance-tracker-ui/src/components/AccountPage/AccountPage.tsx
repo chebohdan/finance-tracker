@@ -21,13 +21,16 @@ import { useParams } from "react-router";
 
 // Custom Component
 import NewTransactionForm from "./NewTransactionForm";
-import TransactionsTable from "./TransactionsTable";
-import AccountUsers from "./AccountUsers";
+import TransactionsTable from "./TransactionsTable/TransactionsTable";
+import AccountUsers from "./AccountUsersTable/AccountUsersTable";
 import Invitations from "./InvitationForm";
 import accountInvitationsService from "../../api/accountInvitationsService";
 import useAuth from "../../hooks/useAuth";
 import Card from "../Card/Card";
 import NewTransactionCategoryForm from "./NewTransactionCategoryForm";
+
+// Icons
+import { MdOutlineAccountBalanceWallet } from "react-icons/md";
 
 function AccountPage() {
   //********************
@@ -240,12 +243,16 @@ function AccountPage() {
   // Render
   //********************
   return (
-    <div className="min-h-screen bg-[var(--color-dark-bg)] p-6 sm:p-8">
+    <div className="min-h-screen  p-6 sm:p-8">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Account Name */}
-        <h1 className="text-3xl font-bold text-[var(--color-dark-text)] mb-4">
-          {account?.name}
-        </h1>
+        <div className="text-[var(--color-dark-text)]">
+          <h1 className=" flex items-center gap-2 text-3xl font-bold  mb-4">
+            <MdOutlineAccountBalanceWallet />
+            <span>{account?.name}</span>
+          </h1>
+          <p className="text-md text-muted">Manage your transaction</p>
+        </div>
 
         {/* Top Section: Form & Users */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 auto-rows-auto">
@@ -289,12 +296,9 @@ function AccountPage() {
         </div>
 
         {/* Transactions Table */}
-        <div>
-          <h2 className="text-lg font-semibold text-[var(--color-dark-text)] mb-4">
-            Transactions
-          </h2>
+        <Card>
           <TransactionsTable transactions={transactions} />
-        </div>
+        </Card>
       </div>
     </div>
   );
