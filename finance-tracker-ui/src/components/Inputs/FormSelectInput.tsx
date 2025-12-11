@@ -40,14 +40,14 @@ function FormSelectInput<T extends FieldValues>({
         <span>{label}</span>
         <select
           className={`
-            mt-3 bg-[var(--color-dark-surface)] 
+            mt-3 bg-[var(--color-dark-bg)] 
             rounded-lg block w-full p-2.5 
             text-[var(--color-dark-text)] 
             focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]
             ${
               disabled
                 ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-                : "bg-[var(--color-dark-surface)] text-[var(--color-dark-text)]"
+                : "bg-[var(--color-dark-bg)] text-[var(--color-dark-text)]"
             }
           `}
           {...(register ? register(name, registerOptions) : {})}

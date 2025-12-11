@@ -42,7 +42,7 @@ function FormInput<T extends FieldValues>({
         <span>{label}</span>
         <input
           className={`mt-3 block w-full p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]
-            bg-[var(--color-dark-surface)] text-[var(--color-dark-text)]
+            bg-[var(--color-dark-bg)] text-[var(--color-dark-text)]
             ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
           placeholder={placeholder}
           type={type}
