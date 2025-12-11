@@ -23,7 +23,7 @@ export default function InvitationForm({
   onSubmit,
 }: Readonly<InvitationFormProps>) {
   return (
-    <div className=" rounded-lg p-6 border-2 border-[var(--color-dark-surface)] space-y-6">
+    <form>
       {/* Invite User Form */}
       <div className="">
         <h2 className="text-lg font-semibold text-[var(--color-dark-text)] ">
@@ -52,6 +52,6 @@ export default function InvitationForm({
           </form>
         }
       </div>
-    </div>
+    </form>
   );
 }

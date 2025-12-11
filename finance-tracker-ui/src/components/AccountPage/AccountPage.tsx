@@ -272,15 +272,19 @@ function AccountPage() {
 
           {/* Users Section */}
           <div className="lg:col-span-1 space-y-6">
-            <AccountUsers users={account?.userAccounts ?? []} />
-            {isOwner && (
-              <Invitations
-                register={registerInvite}
-                errors={errorsInvite}
-                onSubmit={onInvitationSubmit}
-                handleSubmit={handleSubmitInvite}
-              />
-            )}
+            <Card>
+              <AccountUsers users={account?.userAccounts ?? []} />
+              {isOwner && (
+                <div className="mt-3">
+                  <Invitations
+                    register={registerInvite}
+                    errors={errorsInvite}
+                    onSubmit={onInvitationSubmit}
+                    handleSubmit={handleSubmitInvite}
+                  />
+                </div>
+              )}
+            </Card>
           </div>
         </div>
 
