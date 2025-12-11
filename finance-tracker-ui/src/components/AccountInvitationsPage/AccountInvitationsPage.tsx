@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
 import accountInvitationsService from "../../api/accountInvitationsService";
 import type { AccountInvitationsResponse } from "../../types/types";
+import Card from "../Card/Card";
+import Button from "../Button/Button";
+import useAuth from "../../hooks/useAuth";
 
 type Tab = "incoming" | "outgoing";
+type SubTab = "PENDING" | "ACCEPTED" | "REJECTED";
 
 function AccountInvitationsPage() {
   const [incomingInvitation, setIncomingInvitation] =
@@ -11,6 +15,10 @@ function AccountInvitationsPage() {
     useState<AccountInvitationsResponse>();
   const [activeTab, setActiveTab] = useState<Tab>("incoming");
 
+  // NEW: sub tab
+  const [subTab, setSubTab] = useState<SubTab>("PENDING");
+
+  const { userId } = useAuth();
   const { getInvitationsByType } = accountInvitationsService();
 
   useEffect(() => {
@@ -18,37 +26,37 @@ function AccountInvitationsPage() {
     getInvitationsByType("outgoing").then(setOutgoingInvitation);
   }, []);
 
-  const getStatusColor = (status: string) => {
+  const getStatusShadow = (status: string) => {
     switch (status) {
       case "PENDING":
-        return "border-[var(--color-warning)] bg-[var(--color-warning)]/20";
+        return "shadow-[2px_2px_6px_var(--color-warning)]";
       case "ACCEPTED":
-        return "border-[var(--color-success)] bg-[var(--color-success)]/20";
+        return "shadow-[2px_2px_6px_var(--color-success)]";
       case "REJECTED":
-        return "border-[var(--color-danger)] bg-[var(--color-danger)]/20";
+        return "shadow-[2px_2px_6px_var(--color-danger)]";
       default:
-        return "border-[var(--color-dark-text)] bg-[var(--color-dark-surface)]/20";
+        return "shadow-[2px_2px_6px_var(--color-dark-text)]";
     }
   };
 
+  const handleResponse = (inviteId: number, type: string) => {};
+
+  // Renders cards inside a tab + sub tab
   const renderInvitations = (invitations?: AccountInvitationsResponse) => {
     if (!invitations) return <p className="p-4">Loading...</p>;
 
-    const allInvites = [
-      ...(invitations.ACCEPTED ?? []),
-      ...(invitations.PENDING ?? []),
-      ...(invitations.REJECTED ?? []),
-    ];
+    // Filter by sub-tab
+    const filteredInvites = invitations[subTab] ?? [];
 
-    if (allInvites.length === 0)
+    if (filteredInvites.length === 0)
       return <p className="p-4">No invitations found.</p>;
 
     return (
       <div className="grid gap-4 p-4">
-        {allInvites.map((invite) => (
-          <div
+        {filteredInvites.map((invite) => (
+          <Card
             key={invite.id}
-            className={`p-4 rounded-lg border flex justify-between items-center ${getStatusColor(
+            className={`p-4 rounded-lg flex justify-between items-center ${getStatusShadow(
               invite.status
             )}`}
           >
@@ -70,18 +78,30 @@ function AccountInvitationsPage() {
               <p className="text-[var(--color-dark-text)] text-sm">
                 {invite.createdAt}
               </p>
-              <p className="text-[var(--color-dark-text)] text-sm">
-                <span className="font-semibold">Role:</span> {invite.role}
-              </p>
             </div>
-            <span
-              className={`px-3 py-1 text-xs font-bold rounded-full border ${getStatusColor(
-                invite.status
-              )}`}
-            >
-              {invite.status}
-            </span>{" "}
-          </div>
+
+            {invite.status === "PENDING" && invite.invitee.id === userId && (
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  onClick={() => handleResponse(invite.id, "ACCEPTED")}
+                  className="py-1 px-3 text-sm"
+                  variant="primary"
+                >
+                  Accept
+                </Button>
+
+                <Button
+                  type="button"
+                  onClick={() => handleResponse(invite.id, "REJECTED")}
+                  className="py-1 px-3 text-sm"
+                  variant="danger"
+                >
+                  Reject
+                </Button>
+              </div>
+            )}
+          </Card>
         ))}
       </div>
     );
@@ -89,12 +109,16 @@ function AccountInvitationsPage() {
 
   return (
     <div className="min-h-screen p-4 bg-[var(--color-dark-bg)] text-[var(--color-dark-text)]">
+      {/* MAIN TABS */}
       <ul className="flex border-b border-[var(--color-dark-surface)] mb-4">
         {(["incoming", "outgoing"] as Tab[]).map((tab) => (
           <li key={tab} className="mr-2">
             <button
-              onClick={() => setActiveTab(tab)}
-              className={`inline-block p-3 rounded-t-lg focus:outline-none ${
+              onClick={() => {
+                setActiveTab(tab);
+                setSubTab("PENDING"); // reset sub tab when switching main tabs
+              }}
+              className={`inline-block p-3 rounded-t-lg ${
                 activeTab === tab
                   ? "bg-[var(--color-dark-surface)]"
                   : "bg-[var(--color-dark-bg)] hover:bg-[var(--color-dark-surface)]"
@@ -106,6 +130,25 @@ function AccountInvitationsPage() {
         ))}
       </ul>
 
+      {/* SUB TABS */}
+      <ul className="flex gap-2 mb-4">
+        {(["PENDING", "ACCEPTED", "REJECTED"] as SubTab[]).map((s) => (
+          <button
+            key={s}
+            onClick={() => setSubTab(s)}
+            className={`px-3 py-1 rounded-lg text-sm border transition-colors 
+              ${
+                subTab === s
+                  ? "bg-[var(--color-dark-surface)] border-[var(--color-accent)]"
+                  : "bg-[var(--color-dark-bg)] border-[var(--color-dark-surface)] hover:bg-[var(--color-dark-surface)]"
+              }`}
+          >
+            {s.charAt(0) + s.slice(1).toLowerCase()}
+          </button>
+        ))}
+      </ul>
+
+      {/* CONTENT */}
       {activeTab === "incoming"
         ? renderInvitations(incomingInvitation)
         : renderInvitations(outgoingInvitation)}
