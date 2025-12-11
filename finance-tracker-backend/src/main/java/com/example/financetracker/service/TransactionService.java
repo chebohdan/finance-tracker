@@ -1,10 +1,10 @@
 package com.example.financetracker.service;
 
-import com.example.financetracker.dto.CategoryPredictionResponse;
-import com.example.financetracker.dto.TransactionRequest;
-import com.example.financetracker.dto.TransactionResponse;
+import com.example.financetracker.dto.*;
+import com.example.financetracker.exception.AccountNotFoundException;
 import com.example.financetracker.exception.CategoryNotFoundException;
 import com.example.financetracker.exception.UserAccountNotFoundException;
+import com.example.financetracker.mapper.TransactionCategoryMapper;
 import com.example.financetracker.mapper.TransactionMapper;
 import com.example.financetracker.model.*;
 import com.example.financetracker.repo.*;
@@ -32,6 +32,7 @@ public class TransactionService {
     private final TransactionCategoryRepository transactionCategoryRepository;
 
     private final TransactionMapper transactionMapper;
+    private final TransactionCategoryMapper transactionCategoryMapper;
 
     private static final Logger log = LoggerFactory.getLogger(TransactionService.class);
 
@@ -114,4 +115,29 @@ public class TransactionService {
         return transactionMapper.toResponse(savedTransaction);
     }
 
+    @Transactional
+    public TransactionCategoryResponse createTransactionCategory(
+            Long accountId,
+            TransactionCategoryRequest transactionCategoryRequest
+    ) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new AccountNotFoundException(accountId));
+
+        // Optional: check for duplicate category name in this account
+        boolean exists = account.getTransactionCategories().stream()
+                .anyMatch(c -> c.getName().equalsIgnoreCase(transactionCategoryRequest.getName()));
+        if (exists) {
+            throw new IllegalArgumentException(
+                    "Category with name '" + transactionCategoryRequest.getName() + "' already exists in this account"
+            );
+        }
+
+        TransactionCategory category = new TransactionCategory();
+        category.setName(transactionCategoryRequest.getName());
+        category.setAccount(account);
+
+        TransactionCategory saved = transactionCategoryRepository.save(category);
+
+        return transactionCategoryMapper.toResponse(saved);
+    }
 }

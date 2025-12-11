@@ -13,6 +13,7 @@ import {
   type AccountResponse,
   type TransactionRequest,
   type AccountInvitationRequest,
+  type TransactionCategoryRequest,
 } from "../../types/types";
 
 // Router
@@ -25,6 +26,8 @@ import AccountUsers from "./AccountUsers";
 import Invitations from "./InvitationForm";
 import accountInvitationsService from "../../api/accountInvitationsService";
 import useAuth from "../../hooks/useAuth";
+import Card from "../Card/Card";
+import NewTransactionCategoryForm from "./NewTransactionCategoryForm";
 
 function AccountPage() {
   //********************
@@ -54,7 +57,7 @@ function AccountPage() {
   //********************
   const { createAccountInvitation } = accountInvitationsService();
   const { getAccountById, updateAutoCategorization } = accountService();
-  const { createTransaction } = transactionService();
+  const { createTransaction, createTransactionCategory } = transactionService();
 
   //********************
   // React Hook Form setup
@@ -79,6 +82,14 @@ function AccountPage() {
     reset: resetInvite,
     formState: { errors: errorsInvite },
   } = useForm<AccountInvitationRequest>({});
+
+  // New Category Form State
+  const {
+    register: registerNewCategory,
+    handleSubmit: handleSubmitNewCategory,
+    reset: resetNewCategory,
+    formState: { errors: errorsNewCategory },
+  } = useForm<TransactionCategoryRequest>();
 
   //********************
   // Prepare category options for select input
@@ -196,6 +207,22 @@ function AccountPage() {
       .catch((error) => console.error("Failed to create transaction:", error));
   };
 
+  // Create new category
+  const onCreateCategory = async (category: TransactionCategoryRequest) => {
+    if (!account) return;
+    try {
+      const newCategory = await createTransactionCategory(account.id, category);
+      setCategoryOptions((prev) => [
+        ...prev,
+        { label: newCategory.name, value: String(newCategory.id) },
+      ]);
+      resetNewCategory();
+    } catch (err: any) {
+      const msg = err.response?.data?.message ?? "Failed to create category";
+      alert(msg);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--color-dark-bg)] flex items-center justify-center">
@@ -224,15 +251,23 @@ function AccountPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 auto-rows-auto">
           {/* Transaction Form */}
           <div className="lg:col-span-1">
-            <NewTransactionForm
-              register={registerTransaction}
-              onSubmit={onTransactionSubmit}
-              handleSubmit={handleSubmitTransaction}
-              categoryOptions={categoryOptions}
-              errors={errorsTransaction}
-              toggleAutoCat={toggleAutoCat}
-              autoCategorizationEnabled={autoCategorizationEnabled}
-            />
+            <Card>
+              <NewTransactionForm
+                register={registerTransaction}
+                onSubmit={onTransactionSubmit}
+                handleSubmit={handleSubmitTransaction}
+                categoryOptions={categoryOptions}
+                errors={errorsTransaction}
+                toggleAutoCat={toggleAutoCat}
+                autoCategorizationEnabled={autoCategorizationEnabled}
+              />
+              <NewTransactionCategoryForm
+                register={registerNewCategory}
+                onSubmit={onCreateCategory}
+                handleSubmit={handleSubmitNewCategory}
+                errors={errorsNewCategory}
+              />
+            </Card>
           </div>
 
           {/* Users Section */}

@@ -7,7 +7,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
-
 public interface TransactionMapper {
     public Transaction toEntity(TransactionRequest request);
 

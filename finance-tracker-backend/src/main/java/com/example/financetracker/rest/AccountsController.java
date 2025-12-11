@@ -53,6 +53,13 @@ public class AccountsController {
         return ResponseEntity.ok(transactionResponse);
     }
 
+    @PostMapping("/{accountId}/transaction-categories")
+    @PreAuthorize("@accountSecurity.hasAccess(#userCredentials.id, #accountId)")
+    public ResponseEntity<TransactionCategoryResponse> createTransactionCategory(@AuthenticationPrincipal UserCredentials userCredentials, @PathVariable Long accountId,  @RequestBody TransactionCategoryRequest transactionCategoryRequest) {
+        TransactionCategoryResponse transactionResponse = transactionService.createTransactionCategory( accountId, transactionCategoryRequest);
+        return ResponseEntity.ok(transactionResponse);
+    }
+
     @DeleteMapping ("/{accountId}")
     @PreAuthorize("@accountSecurity.isOwner(#userCredentials.id, #accountId)")
     public ResponseEntity<Void> deleteAccount(@AuthenticationPrincipal UserCredentials userCredentials, @PathVariable Long accountId) {

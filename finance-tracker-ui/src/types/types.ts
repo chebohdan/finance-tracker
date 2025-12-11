@@ -52,6 +52,7 @@ export type TransactionResponse = {
   amount: string;
   transactionDate: string;
   categoryName: string;
+  categoryId: string;
   user: UserResponse;
 };
 
@@ -64,7 +65,11 @@ export type TransactionRequest = {
   accountId: string;
 };
 
-type TransactionCategoryResponse = {
+export type TransactionCategoryRequest = {
+  name: string;
+};
+
+export type TransactionCategoryResponse = {
   id: number;
   name: string;
 };

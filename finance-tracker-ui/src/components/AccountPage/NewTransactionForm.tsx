@@ -30,7 +30,7 @@ function NewTransactionForm({
   categoryOptions,
 }: Readonly<NewTransactionFormProps>) {
   return (
-    <div className="h-full rounded-lg p-6 mb-8 border-2 border-[var(--color-dark-surface)]">
+    <form>
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold text-[var(--color-dark-text)]">
           Add Transaction
@@ -106,7 +106,7 @@ function NewTransactionForm({
           Add Transaction
         </button>
       </div>
-    </div>
+    </form>
   );
 }
 
