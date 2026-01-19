@@ -2,17 +2,17 @@ package com.example.financetracker.service;
 
 import com.example.financetracker.dto.AccountInvitationRequest;
 import com.example.financetracker.dto.AccountInvitationResponse;
+import com.example.financetracker.dto.InvitationDecisionRequest;
+import com.example.financetracker.exception.AccountInvitationNotFoundException;
 import com.example.financetracker.exception.AccountNotFoundException;
 import com.example.financetracker.exception.UserNotFoundException;
 import com.example.financetracker.mapper.AccountInvitationsMapper;
-import com.example.financetracker.model.Account;
-import com.example.financetracker.model.AccountInvitation;
-import com.example.financetracker.model.EAccountInvitationStatus;
-import com.example.financetracker.model.User;
+import com.example.financetracker.model.*;
 import com.example.financetracker.repo.AccountInvitationsRepository;
 import com.example.financetracker.repo.AccountRepository;
 import com.example.financetracker.repo.UserRepository;
 import com.example.financetracker.specifictation.AccountInvitationSpecifications;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,5 +115,45 @@ public class AccountInvitationsService {
         notificationService.sendInvitationNotification(inviter, invitee, account.getName());
 
         return accountInvitationsMapper.toDto(savedInvitation);
+    }
+
+    @Transactional
+    public AccountInvitationResponse respondToInvitation(
+            Long invitationId,
+            InvitationDecisionRequest request
+    ) {
+        AccountInvitation invitation = accountInvitationsRepository.findById(invitationId)
+                .orElseThrow(() -> new AccountInvitationNotFoundException(invitationId));
+
+        if (invitation.getStatus() != EAccountInvitationStatus.PENDING) {
+            throw new IllegalStateException("Invitation must be PENDING to respond.");
+        }
+
+        switch (request.getStatus()) {
+            case ACCEPTED -> acceptInvitation(invitation);
+            case REJECTED -> rejectInvitation(invitation);
+            default -> throw new IllegalArgumentException(
+                    "Unsupported invitation status: " + request.getStatus()
+            );
+        }
+
+        return accountInvitationsMapper.toDto(invitation);
+    }
+
+    private void acceptInvitation(AccountInvitation invitation) {
+        Account account = invitation.getAccount();
+        User invitee = invitation.getInvitee();
+
+        UserAccount userAccount = new UserAccount();
+        userAccount.setAccount(account);
+        userAccount.setUser(invitee);
+        userAccount.setRole(EUserAccountRole.USER);
+
+        account.getUserAccounts().add(userAccount);
+        invitation.setStatus(EAccountInvitationStatus.ACCEPTED);
+    }
+
+    private void rejectInvitation(AccountInvitation invitation) {
+        invitation.setStatus(EAccountInvitationStatus.REJECTED);
     }
 }

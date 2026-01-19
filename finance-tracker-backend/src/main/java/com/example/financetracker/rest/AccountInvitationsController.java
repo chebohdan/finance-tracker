@@ -2,6 +2,7 @@ package com.example.financetracker.rest;
 
 import com.example.financetracker.dto.AccountInvitationRequest;
 import com.example.financetracker.dto.AccountInvitationResponse;
+import com.example.financetracker.dto.InvitationDecisionRequest;
 import com.example.financetracker.model.EAccountInvitationStatus;
 import com.example.financetracker.model.UserCredentials;
 import com.example.financetracker.service.AccountInvitationsService;
@@ -34,6 +35,16 @@ public class AccountInvitationsController {
             @RequestBody AccountInvitationRequest accountInvitationRequest
     ) {
         AccountInvitationResponse accountInvitationResponse = accountInvitationsService.createInvitation(userCredentials.getId(), accountInvitationRequest);
+        return ResponseEntity.ok(accountInvitationResponse);
+    }
+
+    @PatchMapping("/{invitationId}")
+    public ResponseEntity<AccountInvitationResponse> acceptInvitation(
+            @AuthenticationPrincipal UserCredentials userCredentials,
+            @PathVariable Long invitationId,
+            @RequestBody InvitationDecisionRequest invitationDecisionRequest
+            ) {
+        AccountInvitationResponse accountInvitationResponse = accountInvitationsService.respondToInvitation(invitationId,invitationDecisionRequest);
         return ResponseEntity.ok(accountInvitationResponse);
     }
 

@@ -85,3 +85,9 @@ export type UserResponse = {
 export type AutoCategorizationUpdateResponse = {
   autoCategorization: boolean;
 };
+
+export type InvitationDecisionStatus = "ACCEPTED" | "REJECTED";
+
+export interface InvitationDecisionRequest {
+  status: InvitationDecisionStatus;
+}

@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import accountInvitationsService from "../../api/accountInvitationsService";
-import type { AccountInvitationsResponse } from "../../types/types";
+import type {
+  AccountInvitationsResponse,
+  InvitationDecisionStatus,
+} from "../../types/types";
 import Card from "../Card/Card";
 import Button from "../Button/Button";
 import useAuth from "../../hooks/useAuth";
@@ -19,7 +22,8 @@ function AccountInvitationsPage() {
   const [subTab, setSubTab] = useState<SubTab>("PENDING");
 
   const { userId } = useAuth();
-  const { getInvitationsByType } = accountInvitationsService();
+  const { getInvitationsByType, respondToInvitation } =
+    accountInvitationsService();
 
   useEffect(() => {
     getInvitationsByType("incoming").then(setIncomingInvitation);
@@ -39,7 +43,28 @@ function AccountInvitationsPage() {
     }
   };
 
-  const handleResponse = (inviteId: number, type: string) => {};
+  const handleResponse = async (
+    inviteId: number,
+    invitationResponse: InvitationDecisionStatus,
+  ) => {
+    const updatedInvitation = await respondToInvitation(
+      inviteId,
+      invitationResponse,
+    );
+
+    setIncomingInvitation((prev) => {
+      if (!prev) return prev;
+
+      return {
+        ...prev,
+        PENDING: prev.PENDING.filter((inv) => inv.id !== inviteId),
+        [updatedInvitation.status]: [
+          ...(prev[updatedInvitation.status] ?? []),
+          updatedInvitation,
+        ],
+      };
+    });
+  };
 
   // Renders cards inside a tab + sub tab
   const renderInvitations = (invitations?: AccountInvitationsResponse) => {
@@ -57,7 +82,7 @@ function AccountInvitationsPage() {
           <Card
             key={invite.id}
             className={`p-4 rounded-lg flex justify-between items-center ${getStatusShadow(
-              invite.status
+              invite.status,
             )}`}
           >
             <div className="space-y-1">
