@@ -1,7 +1,10 @@
 import useSecureApi from "../hooks/useSecureApi";
 import type {
   AccountInvitationRequest,
+  AccountInvitationResponse,
   AccountInvitationsResponse,
+  InvitationDecisionRequest,
+  InvitationDecisionStatus,
 } from "../types/types";
 
 function accountInvitationsService() {
@@ -16,18 +19,35 @@ function accountInvitationsService() {
   };
 
   const createAccountInvitation = async (
-    accountInvitationRequest: AccountInvitationRequest
+    accountInvitationRequest: AccountInvitationRequest,
   ) => {
     const { data } = await api.post<AccountInvitationsResponse>(
       "/invitations",
-      accountInvitationRequest
+      accountInvitationRequest,
     );
+    return data;
+  };
+
+  const respondToInvitation = async (
+    invitationId: number,
+    decision: InvitationDecisionStatus,
+  ) => {
+    const payload: InvitationDecisionRequest = {
+      status: decision,
+    };
+
+    const { data } = await api.patch<AccountInvitationResponse>(
+      `/invitations/${invitationId}`,
+      payload,
+    );
+
     return data;
   };
 
   return {
     getInvitationsByType,
     createAccountInvitation,
+    respondToInvitation,
   };
 }
 
