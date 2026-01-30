@@ -1,4 +1,5 @@
 import type {
+  PageInfo,
   TransactionCategoryRequest,
   TransactionCategoryResponse,
   TransactionRequest,
@@ -9,27 +10,49 @@ import { api } from "./api";
 function transactionService() {
   const createTransaction = async (
     accountId: number,
-    transactionRequest: TransactionRequest
+    transactionRequest: TransactionRequest,
   ): Promise<TransactionResponse> => {
     const { data } = await api.post<TransactionResponse>(
       `/accounts/${accountId}/transactions`,
-      transactionRequest
+      transactionRequest,
     );
     return data;
   };
 
   const createTransactionCategory = async (
     accountId: number,
-    transactionCategoryRequest: TransactionCategoryRequest
+    transactionCategoryRequest: TransactionCategoryRequest,
   ): Promise<TransactionCategoryResponse> => {
     const { data } = await api.post<TransactionCategoryResponse>(
       `/accounts/${accountId}/transaction-categories`,
-      transactionCategoryRequest
+      transactionCategoryRequest,
     );
     return data;
   };
 
-  return { createTransaction, createTransactionCategory };
+  const getTransactionsByAccountId = async (
+    accountId: number,
+    page: number,
+    size: number,
+  ): Promise<PageInfo<TransactionResponse>> => {
+    const { data } = await api.get<PageInfo<TransactionResponse>>(
+      `/accounts/${accountId}/transactions?page=${page}&size=${size}`,
+    );
+
+    const pageInfo: PageInfo<TransactionResponse> = {
+      content: data.content,
+      totalPages: data.totalPages,
+      currentPage: data.currentPage,
+    };
+
+    return pageInfo;
+  };
+
+  return {
+    createTransaction,
+    createTransactionCategory,
+    getTransactionsByAccountId,
+  };
 }
 
 export default transactionService;

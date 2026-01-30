@@ -14,6 +14,7 @@ import {
   type TransactionRequest,
   type AccountInvitationRequest,
   type TransactionCategoryRequest,
+  type PageInfo,
 } from "../../types/types";
 
 // Router
@@ -38,7 +39,8 @@ function AccountPage() {
   //********************
   const [account, setAccount] = useState<AccountResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [transactions, setTransactions] = useState<TransactionResponse[]>([]);
+  const [transactions, setTransactions] =
+    useState<PageInfo<TransactionResponse>>();
   const [autoCategorizationEnabled, setAutoCategorizationEnabled] =
     useState<boolean>(false);
   const [categoryOptions, setCategoryOptions] = useState<
@@ -60,7 +62,11 @@ function AccountPage() {
   //********************
   const { createAccountInvitation } = accountInvitationsService();
   const { getAccountById, updateAutoCategorization } = accountService();
-  const { createTransaction, createTransactionCategory } = transactionService();
+  const {
+    createTransaction,
+    createTransactionCategory,
+    getTransactionsByAccountId,
+  } = transactionService();
 
   //********************
   // React Hook Form setup
@@ -103,7 +109,7 @@ function AccountPage() {
         account.transactionCategories.map((cat) => ({
           label: cat.name,
           value: String(cat.id),
-        }))
+        })),
       );
     }
   }, [account?.transactionCategories]);
@@ -115,15 +121,21 @@ function AccountPage() {
     const fetchAccount = async () => {
       try {
         setLoading(true);
-        const data = await getAccountById(Number(id));
-        setAccount(data);
-        setTransactions(data.transactions ?? []);
+        const accountData = await getAccountById(Number(id));
+        const transactionsPageable = await getTransactionsByAccountId(
+          Number(id),
+          0,
+          3,
+        );
 
-        const currentUserAccount = data.userAccounts?.find(
-          (ua) => ua.userId === userId
+        setAccount(accountData);
+        setTransactions(transactionsPageable);
+
+        const currentUserAccount = accountData.userAccounts?.find(
+          (ua) => ua.userId === userId,
         );
         setAutoCategorizationEnabled(
-          currentUserAccount?.autoCategorization ?? false
+          currentUserAccount?.autoCategorization ?? false,
         );
       } catch (err) {
         console.error("Failed to load account:", err);
@@ -156,21 +168,21 @@ function AccountPage() {
   // Handlers
   //********************
   const onTransactionSubmit = async (
-    transactionRequest: TransactionRequest
+    transactionRequest: TransactionRequest,
   ) => {
     try {
       const transaction = await createTransaction(
         Number(id),
-        transactionRequest
+        transactionRequest,
       );
 
       // Update transactions state
-      setTransactions((prev) => [transaction, ...prev]);
+      //setTransactions((prev) => [transaction, ...prev]);
 
       // If the transaction has a new category, update categoryOptions
       if (transaction.categoryName) {
         const categoryExists = categoryOptions.some(
-          (cat) => cat.value === transaction.categoryId
+          (cat) => cat.value === transaction.categoryId,
         );
         if (!categoryExists) {
           setCategoryOptions((prev) => [
@@ -197,12 +209,11 @@ function AccountPage() {
   };
 
   const onInvitationSubmit = (
-    accountInvitationRequest: AccountInvitationRequest
+    accountInvitationRequest: AccountInvitationRequest,
   ) => {
     accountInvitationRequest.accountId = Number.parseInt(id);
     createAccountInvitation(accountInvitationRequest)
       .then((response) => {
-        console.log(response);
         resetInvite({
           inviteeUsername: "",
         });
@@ -235,10 +246,22 @@ function AccountPage() {
   }
 
   const isOwner = account?.userAccounts?.some(
-    (ua) => ua.role === "OWNER" && ua.userId === userId
+    (ua) => ua.role === "OWNER" && ua.userId === userId,
   );
 
-  console.log(account?.userAccounts);
+  const onTransactionsPageSelect = async (page: number) => {
+    try {
+      const transactionsPageable = await getTransactionsByAccountId(
+        Number(id),
+        page,
+        3,
+      );
+      setTransactions(transactionsPageable);
+    } catch (err) {
+      console.error("Failed to load account:", err);
+    }
+  };
+
   //********************
   // Render
   //********************
@@ -297,7 +320,12 @@ function AccountPage() {
 
         {/* Transactions Table */}
         <Card>
-          <TransactionsTable transactions={transactions} />
+          {transactions && (
+            <TransactionsTable
+              transactions={transactions}
+              onPageSelect={onTransactionsPageSelect}
+            />
+          )}
         </Card>
       </div>
     </div>
