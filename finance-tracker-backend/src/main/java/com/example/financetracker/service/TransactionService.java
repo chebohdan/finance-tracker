@@ -9,10 +9,14 @@ import com.example.financetracker.mapper.TransactionMapper;
 import com.example.financetracker.model.*;
 import com.example.financetracker.repo.*;
 import com.example.financetracker.specifictation.TransactionCategorySpecifications;
+import com.example.financetracker.specifictation.TransactionSpecifications;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 /**
@@ -139,5 +143,11 @@ public class TransactionService {
         TransactionCategory saved = transactionCategoryRepository.save(category);
 
         return transactionCategoryMapper.toResponse(saved);
+    }
+
+    public Page<TransactionResponse> getTransactionsByAccountId(Long accountId, Integer page, Integer size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Transaction> transactions = transactionRepository.findAll(TransactionSpecifications.byAccountId(accountId), pageable);
+        return transactions.map(transactionMapper::toResponse);
     }
 }
