@@ -7,7 +7,6 @@ export type AccountResponse = {
   id: number;
   name: string;
   balance: number;
-  transactions: TransactionResponse[];
   transactionCategories: TransactionCategoryResponse[];
   userAccounts: UserAccountResponse[];
 };
@@ -54,6 +53,12 @@ export type TransactionResponse = {
   categoryName: string;
   categoryId: string;
   user: UserResponse;
+};
+
+export type PageInfo<T> = {
+  content: T[]; // the list of items
+  totalPages: number; // total pages in backend
+  currentPage: number; // current page index (0-based)
 };
 
 export type TransactionRequest = {
