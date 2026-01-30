@@ -37,7 +37,7 @@ public class AccountsController {
     @GetMapping("/{accountId}/transactions")
     @PreAuthorize("@accountSecurity.hasAccess(#userCredentials.id, #accountId)")
     public ResponseEntity<Page<TransactionResponse>> getAccountTransactions(@AuthenticationPrincipal UserCredentials userCredentials, @PathVariable Long accountId, @RequestParam Integer page, @RequestParam Integer size) {
-        Page<TransactionResponse> accountResponse = transactionService.TransactionsByAccountId(accountId, page, size);
+        Page<TransactionResponse> accountResponse = transactionService.getTransactionsByAccountId(accountId, page, size);
         return ResponseEntity.ok(accountResponse);
     }
 
