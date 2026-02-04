@@ -1,5 +1,5 @@
 // React
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 //RHF
 import { useForm } from "react-hook-form";
@@ -37,9 +37,6 @@ function AccountPage() {
   // State
   //********************
 
-  const [categoryOptions, setCategoryOptions] = useState<
-    FormSelectInputOption[]
-  >([]);
   const [page, setPage] = useState(0);
 
   //********************
@@ -121,27 +118,15 @@ function AccountPage() {
     mutationFn: (transactionRequest: TransactionRequest) =>
       createTransaction(Number(id), transactionRequest),
 
-    onSuccess: (transaction) => {
+    onSuccess: () => {
       // Refetch transactions to show the new one
       queryClient.invalidateQueries({
         queryKey: ["getTransactionsByAccountId", id, page],
       });
 
-      // If new category was created, update category options
-      if (transaction.categoryName) {
-        const categoryExists = categoryOptions.some(
-          (cat) => cat.value === transaction.categoryId,
-        );
-        if (!categoryExists) {
-          setCategoryOptions((prev) => [
-            ...prev,
-            {
-              label: transaction.categoryName,
-              value: String(transaction.categoryId),
-            },
-          ]);
-        }
-      }
+      queryClient.invalidateQueries({
+        queryKey: ["getAccountById", id],
+      });
 
       // Reset form
       resetTransaction({
@@ -162,12 +147,10 @@ function AccountPage() {
     mutationFn: (category: TransactionCategoryRequest) =>
       createTransactionCategory(account!.id, category),
 
-    onSuccess: (newCategory) => {
-      setCategoryOptions((prev) => [
-        ...prev,
-        { label: newCategory.name, value: String(newCategory.id) },
-      ]);
-      resetNewCategory();
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["getAccountById", id],
+      });
     },
 
     onError: (err: any) => {
@@ -211,15 +194,17 @@ function AccountPage() {
   //********************
   // Prepare category options for select input
   //********************
-  useEffect(() => {
-    if (account?.transactionCategories) {
-      setCategoryOptions(
-        account.transactionCategories.map((cat) => ({
-          label: cat.name,
-          value: String(cat.id),
-        })),
-      );
+  const categoryOptions = useMemo(() => {
+    if (
+      !account?.transactionCategories ||
+      account.transactionCategories.length === 0
+    ) {
+      return [];
     }
+    return account.transactionCategories.map((cat) => ({
+      label: cat.name,
+      value: String(cat.id),
+    }));
   }, [account?.transactionCategories]);
 
   //********************
