@@ -132,15 +132,16 @@ function AccountPage() {
     mutationFn: (transactionRequest: TransactionRequest) =>
       createTransaction(Number(id), transactionRequest),
 
-    onSuccess: () => {
+    onSuccess: async () => {
       // Refetch transactions to show the new one
-      queryClient.invalidateQueries({
-        queryKey: ["getTransactionsByAccountId", id, page],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ["getAccountById", id],
-      });
+      await Promise.all([
+        queryClient.refetchQueries({
+          queryKey: ["getTransactionsByAccountId", id, page],
+        }),
+        queryClient.refetchQueries({
+          queryKey: ["getAccountById", id],
+        }),
+      ]);
 
       // Reset form
       resetTransaction({
