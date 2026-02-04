@@ -24,29 +24,19 @@ export default function InvitationForm({
   onSubmit,
 }: Readonly<InvitationFormProps>) {
   return (
-    <form>
-      {/* Invite User Form */}
-      <div className="">
-        {
-          <form
-            className="flex flex-col  gap-3"
-            onSubmit={handleSubmit(onSubmit)}
-          >
-            <FormInput
-              register={register}
-              errors={errors}
-              label="Username"
-              placeholder="Enter username"
-              name="inviteeUsername"
-              type="text"
-            />
+    <form className="flex flex-col  gap-3" onSubmit={handleSubmit(onSubmit)}>
+      <FormInput
+        register={register}
+        errors={errors}
+        label="Username"
+        placeholder="Enter username"
+        name="inviteeUsername"
+        type="text"
+      />
 
-            <Button type="submit" fullWidth>
-              Add
-            </Button>
-          </form>
-        }
-      </div>
+      <Button type="submit" fullWidth>
+        Add
+      </Button>
     </form>
   );
 }
