@@ -1,5 +1,5 @@
 // React
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 
 //RHF
 import { useForm } from "react-hook-form";
@@ -194,18 +194,11 @@ function AccountPage() {
   //********************
   // Prepare category options for select input
   //********************
-  const categoryOptions = useMemo(() => {
-    if (
-      !account?.transactionCategories ||
-      account.transactionCategories.length === 0
-    ) {
-      return [];
-    }
-    return account.transactionCategories.map((cat) => ({
+  const categoryOptions =
+    account?.transactionCategories?.map((cat) => ({
       label: cat.name,
       value: String(cat.id),
-    }));
-  }, [account?.transactionCategories]);
+    })) ?? [];
 
   //********************
   // Handlers
