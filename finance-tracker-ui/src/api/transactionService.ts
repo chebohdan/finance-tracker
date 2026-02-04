@@ -20,9 +20,12 @@ function transactionService() {
   };
 
   const createTransactionCategory = async (
-    accountId: number,
+    accountId: number | undefined,
     transactionCategoryRequest: TransactionCategoryRequest,
   ): Promise<TransactionCategoryResponse> => {
+    if (!accountId || accountId <= 0) {
+      throw new Error("Invalid account ID");
+    }
     const { data } = await api.post<TransactionCategoryResponse>(
       `/accounts/${accountId}/transaction-categories`,
       transactionCategoryRequest,

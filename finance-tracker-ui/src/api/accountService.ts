@@ -21,18 +21,19 @@ function accountService() {
   const createAccount = async (accountRequest: AccountRequest) => {
     const { data } = await api.post<AccountResponse>(
       "/accounts",
-      accountRequest
+      accountRequest,
     );
     return data;
   };
 
   const updateAutoCategorization = async (
-    id: number,
-    autoCategorization: boolean
+    accountId: number | undefined,
+    autoCategorization: boolean,
   ) => {
+    if (!accountId || accountId < 0) throw new Error("Invalid account ID");
     const { data } = await api.patch<AutoCategorizationUpdateResponse>(
-      `/accounts/${id}/auto-categorization`,
-      { autoCategorization }
+      `/accounts/${accountId}/auto-categorization`,
+      { autoCategorization },
     );
     return data;
   };

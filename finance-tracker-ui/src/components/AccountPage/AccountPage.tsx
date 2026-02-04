@@ -3,13 +3,11 @@ import { useState } from "react";
 
 //RHF
 import { useForm } from "react-hook-form";
-import type { FormSelectInputOption } from "../Inputs/FormSelectInput";
 
 //API
 import accountService from "../../api/accountService";
 import transactionService from "../../api/transactionService";
 import {
-  type AccountResponse,
   type TransactionRequest,
   type AccountInvitationRequest,
   type TransactionCategoryRequest,
@@ -81,7 +79,7 @@ function AccountPage() {
 
   const { mutate: mutateAutoCategorization } = useMutation({
     mutationFn: (newValue: boolean) =>
-      updateAutoCategorization(account!.id, newValue),
+      updateAutoCategorization(account?.id, newValue),
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["getAccountById", id] });
@@ -89,6 +87,22 @@ function AccountPage() {
 
     onError: (err) => {
       console.error("Failed to update auto-categorization:", err);
+    },
+  });
+
+  const { mutate: createCategory } = useMutation({
+    mutationFn: (category: TransactionCategoryRequest) =>
+      createTransactionCategory(account?.id, category),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["getAccountById", id],
+      });
+    },
+
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message ?? "Failed to create category";
+      alert(msg);
     },
   });
 
@@ -140,22 +154,6 @@ function AccountPage() {
 
     onError: (error) => {
       console.error("Failed to create transaction:", error);
-    },
-  });
-
-  const { mutate: createCategory } = useMutation({
-    mutationFn: (category: TransactionCategoryRequest) =>
-      createTransactionCategory(account!.id, category),
-
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["getAccountById", id],
-      });
-    },
-
-    onError: (err: any) => {
-      const msg = err?.response?.data?.message ?? "Failed to create category";
-      alert(msg);
     },
   });
 
@@ -212,6 +210,10 @@ function AccountPage() {
         <p className="text-[var(--color-dark-text)]">Loading...</p>
       </div>
     );
+  }
+
+  if (!account) {
+    return <div>Error: Account not found</div>;
   }
 
   const isOwner = account?.userAccounts?.some(
