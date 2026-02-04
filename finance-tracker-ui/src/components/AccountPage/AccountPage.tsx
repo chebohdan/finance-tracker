@@ -29,6 +29,7 @@ import NewTransactionCategoryForm from "./NewTransactionCategoryForm";
 // Icons
 import { MdOutlineAccountBalanceWallet } from "react-icons/md";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { PAGINATION_SIZE } from "../../constants/pagination";
 
 function AccountPage() {
   //********************
@@ -65,7 +66,12 @@ function AccountPage() {
     error: errorTransaction,
   } = useQuery({
     queryKey: ["getTransactionsByAccountId", id, page],
-    queryFn: () => getTransactionsByAccountId(Number(id), page, 3),
+    queryFn: () =>
+      getTransactionsByAccountId(
+        Number(id),
+        page,
+        PAGINATION_SIZE.TRANSACTIONS,
+      ),
   });
 
   const {
