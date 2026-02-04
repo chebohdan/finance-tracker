@@ -9,12 +9,10 @@ import type { FormSelectInputOption } from "../Inputs/FormSelectInput";
 import accountService from "../../api/accountService";
 import transactionService from "../../api/transactionService";
 import {
-  type TransactionResponse,
   type AccountResponse,
   type TransactionRequest,
   type AccountInvitationRequest,
   type TransactionCategoryRequest,
-  type PageInfo,
 } from "../../types/types";
 
 // Router
@@ -32,20 +30,17 @@ import NewTransactionCategoryForm from "./NewTransactionCategoryForm";
 
 // Icons
 import { MdOutlineAccountBalanceWallet } from "react-icons/md";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 function AccountPage() {
   //********************
   // State
   //********************
-  const [account, setAccount] = useState<AccountResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [transactions, setTransactions] =
-    useState<PageInfo<TransactionResponse>>();
-  const [autoCategorizationEnabled, setAutoCategorizationEnabled] =
-    useState<boolean>(false);
+
   const [categoryOptions, setCategoryOptions] = useState<
     FormSelectInputOption[]
   >([]);
+  const [page, setPage] = useState(0);
 
   //********************
   // Navigation
@@ -60,6 +55,7 @@ function AccountPage() {
   //********************
   // API services
   //********************
+  const queryClient = useQueryClient();
   const { createAccountInvitation } = accountInvitationsService();
   const { getAccountById, updateAutoCategorization } = accountService();
   const {
@@ -67,6 +63,118 @@ function AccountPage() {
     createTransactionCategory,
     getTransactionsByAccountId,
   } = transactionService();
+
+  const {
+    data: transactions,
+    isLoading: isLoadingTransactions,
+    error: errorTransaction,
+  } = useQuery({
+    queryKey: ["getTransactionsByAccountId", id, page],
+    queryFn: () => getTransactionsByAccountId(Number(id), page, 3),
+  });
+
+  const {
+    data: account,
+    isLoading: isLoadingAccount,
+    error: errorAccount,
+  } = useQuery({
+    queryKey: ["getAccountById", id, page],
+    queryFn: () => getAccountById(Number(id)),
+  });
+
+  const { mutate: mutateAutoCategorization } = useMutation({
+    mutationFn: (newValue: boolean) =>
+      updateAutoCategorization(account!.id, newValue),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["getAccountById", id] });
+    },
+
+    onError: (err) => {
+      console.error("Failed to update auto-categorization:", err);
+    },
+  });
+
+  const autoCategorizationEnabled =
+    account?.userAccounts?.find((ua) => ua.userId === userId)
+      ?.autoCategorization ?? false;
+
+  const { mutate: mutateCreateAccountInvitation } = useMutation({
+    mutationFn: createAccountInvitation,
+    onSuccess: () =>
+      resetInvite({
+        inviteeUsername: "",
+      }),
+    onError: (err) => {
+      console.error("Failed to update auto-categorization:", err);
+    },
+  });
+
+  const handleInvitationSubmit = (formData: { inviteeUsername: string }) => {
+    mutateCreateAccountInvitation({
+      ...formData,
+      accountId: Number(id), // ✅ Add the missing field
+    });
+  };
+
+  const { mutate: onTransactionSubmit } = useMutation({
+    mutationFn: (transactionRequest: TransactionRequest) =>
+      createTransaction(Number(id), transactionRequest),
+
+    onSuccess: (transaction) => {
+      // Refetch transactions to show the new one
+      queryClient.invalidateQueries({
+        queryKey: ["getTransactionsByAccountId", id, page],
+      });
+
+      // If new category was created, update category options
+      if (transaction.categoryName) {
+        const categoryExists = categoryOptions.some(
+          (cat) => cat.value === transaction.categoryId,
+        );
+        if (!categoryExists) {
+          setCategoryOptions((prev) => [
+            ...prev,
+            {
+              label: transaction.categoryName,
+              value: String(transaction.categoryId),
+            },
+          ]);
+        }
+      }
+
+      // Reset form
+      resetTransaction({
+        name: "",
+        amount: "",
+        categoryId: "",
+        description: "",
+        transactionDate: new Date().toISOString().split("T")[0],
+      });
+    },
+
+    onError: (error) => {
+      console.error("Failed to create transaction:", error);
+    },
+  });
+
+  const { mutate: createCategory } = useMutation({
+    mutationFn: (category: TransactionCategoryRequest) =>
+      createTransactionCategory(account!.id, category),
+
+    onSuccess: (newCategory) => {
+      setCategoryOptions((prev) => [
+        ...prev,
+        { label: newCategory.name, value: String(newCategory.id) },
+      ]);
+      resetNewCategory();
+    },
+
+    onError: (err: any) => {
+      const msg = err?.response?.data?.message ?? "Failed to create category";
+      alert(msg);
+    },
+  });
 
   //********************
   // React Hook Form setup
@@ -115,129 +223,12 @@ function AccountPage() {
   }, [account?.transactionCategories]);
 
   //********************
-  // Fetch account on mount
-  //********************
-  useEffect(() => {
-    const fetchAccount = async () => {
-      try {
-        setLoading(true);
-        const accountData = await getAccountById(Number(id));
-        const transactionsPageable = await getTransactionsByAccountId(
-          Number(id),
-          0,
-          3,
-        );
-
-        setAccount(accountData);
-        setTransactions(transactionsPageable);
-
-        const currentUserAccount = accountData.userAccounts?.find(
-          (ua) => ua.userId === userId,
-        );
-        setAutoCategorizationEnabled(
-          currentUserAccount?.autoCategorization ?? false,
-        );
-      } catch (err) {
-        console.error("Failed to load account:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAccount();
-  }, [id, userId]);
-
-  //********************
-  // Toggle auto-categorization
-  //********************
-  const toggleAutoCat = async () => {
-    if (!account) return;
-    const newValue = !autoCategorizationEnabled;
-    setAutoCategorizationEnabled(newValue);
-
-    try {
-      const data = await updateAutoCategorization(account.id, newValue);
-      setAutoCategorizationEnabled(data.autoCategorization);
-    } catch (err) {
-      console.error("Failed to update auto-categorization:", err);
-      setAutoCategorizationEnabled(!newValue);
-    }
-  };
-
-  //********************
   // Handlers
   //********************
-  const onTransactionSubmit = async (
-    transactionRequest: TransactionRequest,
-  ) => {
-    try {
-      const transaction = await createTransaction(
-        Number(id),
-        transactionRequest,
-      );
-
-      // Update transactions state
-      //setTransactions((prev) => [transaction, ...prev]);
-
-      // If the transaction has a new category, update categoryOptions
-      if (transaction.categoryName) {
-        const categoryExists = categoryOptions.some(
-          (cat) => cat.value === transaction.categoryId,
-        );
-        if (!categoryExists) {
-          setCategoryOptions((prev) => [
-            ...prev,
-            {
-              label: transaction.categoryName,
-              value: String(transaction.categoryId),
-            },
-          ]);
-        }
-      }
-
-      // Reset form
-      resetTransaction({
-        name: "",
-        amount: "",
-        categoryId: "",
-        description: "",
-        transactionDate: new Date().toISOString().split("T")[0],
-      });
-    } catch (error) {
-      console.error("Failed to create transaction:", error);
-    }
-  };
-
-  const onInvitationSubmit = (
-    accountInvitationRequest: AccountInvitationRequest,
-  ) => {
-    accountInvitationRequest.accountId = Number.parseInt(id);
-    createAccountInvitation(accountInvitationRequest)
-      .then((response) => {
-        resetInvite({
-          inviteeUsername: "",
-        });
-      })
-      .catch((error) => console.error("Failed to create transaction:", error));
-  };
 
   // Create new category
-  const onCreateCategory = async (category: TransactionCategoryRequest) => {
-    if (!account) return;
-    try {
-      const newCategory = await createTransactionCategory(account.id, category);
-      setCategoryOptions((prev) => [
-        ...prev,
-        { label: newCategory.name, value: String(newCategory.id) },
-      ]);
-      resetNewCategory();
-    } catch (err: any) {
-      const msg = err.response?.data?.message ?? "Failed to create category";
-      alert(msg);
-    }
-  };
 
-  if (loading) {
+  if (isLoadingAccount) {
     return (
       <div className="min-h-screen bg-[var(--color-dark-bg)] flex items-center justify-center">
         <p className="text-[var(--color-dark-text)]">Loading...</p>
@@ -249,17 +240,8 @@ function AccountPage() {
     (ua) => ua.role === "OWNER" && ua.userId === userId,
   );
 
-  const onTransactionsPageSelect = async (page: number) => {
-    try {
-      const transactionsPageable = await getTransactionsByAccountId(
-        Number(id),
-        page,
-        3,
-      );
-      setTransactions(transactionsPageable);
-    } catch (err) {
-      console.error("Failed to load account:", err);
-    }
+  const onTransactionsPageSelect = (newPage: number) => {
+    setPage(newPage); // That's it! Query refetches automatically
   };
 
   //********************
@@ -288,12 +270,14 @@ function AccountPage() {
                 handleSubmit={handleSubmitTransaction}
                 categoryOptions={categoryOptions}
                 errors={errorsTransaction}
-                toggleAutoCat={toggleAutoCat}
+                toggleAutoCat={() =>
+                  mutateAutoCategorization(!autoCategorizationEnabled)
+                }
                 autoCategorizationEnabled={autoCategorizationEnabled}
               />
               <NewTransactionCategoryForm
                 register={registerNewCategory}
-                onSubmit={onCreateCategory}
+                onSubmit={createCategory}
                 handleSubmit={handleSubmitNewCategory}
                 errors={errorsNewCategory}
               />
@@ -309,7 +293,7 @@ function AccountPage() {
                   <Invitations
                     register={registerInvite}
                     errors={errorsInvite}
-                    onSubmit={onInvitationSubmit}
+                    onSubmit={handleInvitationSubmit}
                     handleSubmit={handleSubmitInvite}
                   />
                 </div>
