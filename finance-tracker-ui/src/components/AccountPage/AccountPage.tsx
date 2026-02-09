@@ -30,6 +30,7 @@ import NewTransactionCategoryForm from "./NewTransactionCategoryForm";
 import { MdOutlineAccountBalanceWallet } from "react-icons/md";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PAGINATION_SIZE } from "../../constants/pagination";
+import { QueryErrorFallback } from "../QueryErrorFallback";
 
 function AccountPage() {
   //********************
@@ -61,6 +62,17 @@ function AccountPage() {
   } = transactionService();
 
   const {
+    data: account,
+    isLoading: isLoadingAccount,
+    error: errorAccount,
+    refetch: refetchAccount,
+  } = useQuery({
+    queryKey: ["getAccountById", id, page],
+    queryFn: () => getAccountById(Number(id)),
+    retry: false,
+  });
+
+  const {
     data: transactions,
     isLoading: isLoadingTransactions,
     error: errorTransaction,
@@ -72,15 +84,7 @@ function AccountPage() {
         page,
         PAGINATION_SIZE.TRANSACTIONS,
       ),
-  });
-
-  const {
-    data: account,
-    isLoading: isLoadingAccount,
-    error: errorAccount,
-  } = useQuery({
-    queryKey: ["getAccountById", id, page],
-    queryFn: () => getAccountById(Number(id)),
+    enabled: !!account && !errorAccount,
   });
 
   const { mutate: mutateAutoCategorization } = useMutation({
@@ -219,10 +223,6 @@ function AccountPage() {
     );
   }
 
-  if (!account) {
-    return <div>Error: Account not found</div>;
-  }
-
   const isOwner = account?.userAccounts?.some(
     (ua) => ua.role === "OWNER" && ua.userId === userId,
   );
@@ -234,6 +234,17 @@ function AccountPage() {
   //********************
   // Render
   //********************
+  if (errorAccount && !account) {
+    return (
+      <QueryErrorFallback
+        error={errorAccount}
+        onRetry={refetchAccount}
+        title="Failed to Load Account"
+        isFatal={true}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen  p-6 sm:p-8">
       <div className="max-w-6xl mx-auto space-y-8">
