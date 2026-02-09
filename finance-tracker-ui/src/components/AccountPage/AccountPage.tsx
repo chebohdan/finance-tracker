@@ -76,6 +76,7 @@ function AccountPage() {
     data: transactions,
     isLoading: isLoadingTransactions,
     error: errorTransaction,
+    refetch: refetchTransactions,
   } = useQuery({
     queryKey: ["getTransactionsByAccountId", id, page],
     queryFn: () =>
@@ -240,6 +241,17 @@ function AccountPage() {
         error={errorAccount}
         onRetry={refetchAccount}
         title="Failed to Load Account"
+        isFatal={true}
+      />
+    );
+  }
+
+  if (errorTransaction && !transactions) {
+    return (
+      <QueryErrorFallback
+        error={errorTransaction}
+        onRetry={refetchTransactions}
+        title="Failed to Load Transactions"
         isFatal={true}
       />
     );
