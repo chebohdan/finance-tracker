@@ -32,6 +32,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PAGINATION_SIZE } from "../../constants/pagination";
 import { QueryErrorFallback } from "../QueryErrorFallback";
 
+// react-toastify
+import { toast } from "react-toastify";
+import useErrorToastNotification from "../../hooks/useErrorToastNotification";
+
 function AccountPage() {
   //********************
   // State
@@ -48,6 +52,11 @@ function AccountPage() {
   // Auth
   //********************
   const { userId } = useAuth();
+
+  //********************
+  // Toastify hook
+  //********************
+  const { showError } = useErrorToastNotification();
 
   //********************
   // API services
@@ -89,17 +98,19 @@ function AccountPage() {
   });
 
   const { mutate: mutateAutoCategorization } = useMutation({
-    mutationFn: (newValue: boolean) =>
-      updateAutoCategorization(account?.id, newValue),
+    mutationFn: (newValue: boolean) => updateAutoCategorization(33, newValue),
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["getAccountById", id] });
     },
 
     onError: (err) => {
-      console.error("Failed to update auto-categorization:", err);
+      showError("Failed to toggle auto categorization");
     },
   });
+  const autoCategorizationEnabled =
+    account?.userAccounts?.find((ua) => ua.userId === userId)
+      ?.autoCategorization ?? false;
 
   const { mutate: createCategory } = useMutation({
     mutationFn: (category: TransactionCategoryRequest) =>
@@ -112,14 +123,9 @@ function AccountPage() {
     },
 
     onError: (err: any) => {
-      const msg = err?.response?.data?.message ?? "Failed to create category";
-      alert(msg);
+      showError("Failed to create category");
     },
   });
-
-  const autoCategorizationEnabled =
-    account?.userAccounts?.find((ua) => ua.userId === userId)
-      ?.autoCategorization ?? false;
 
   const { mutate: mutateCreateAccountInvitation } = useMutation({
     mutationFn: createAccountInvitation,
@@ -128,7 +134,7 @@ function AccountPage() {
         inviteeUsername: "",
       }),
     onError: (err) => {
-      console.error("Failed to update auto-categorization:", err);
+      showError("Failed to create an inviation");
     },
   });
 
@@ -165,7 +171,7 @@ function AccountPage() {
     },
 
     onError: (error) => {
-      console.error("Failed to create transaction:", error);
+      showError("Failed to create transaction:");
     },
   });
 
