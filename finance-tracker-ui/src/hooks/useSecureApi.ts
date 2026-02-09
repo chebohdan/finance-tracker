@@ -15,7 +15,9 @@ function useSecureApi() {
         }
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => {
+        throw error;
+      },
     );
 
     const responseInterceptor = api.interceptors.response.use(
@@ -23,7 +25,6 @@ function useSecureApi() {
       async (error) => {
         const prevRequest = error?.config;
         if (error?.response?.status === 403 && !prevRequest?.sent) {
-          console.log("REFRESH");
           prevRequest.sent = true;
           const newAuthState = await refreshToken();
           const newToken = newAuthState.token;
@@ -31,8 +32,8 @@ function useSecureApi() {
           setAccessToken(newToken);
           return api(prevRequest);
         }
-        Promise.reject(error);
-      }
+        throw error;
+      },
     );
     return () => {
       api.interceptors.request.eject(requestInterceptor);
