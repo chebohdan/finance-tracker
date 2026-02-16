@@ -35,6 +35,8 @@ import { QueryErrorFallback } from "../QueryErrorFallback";
 // react-toastify
 import { toast } from "react-toastify";
 import useErrorToastNotification from "../../hooks/useToastNotification";
+import useAccountPermissions from "../../hooks/useAccountPermissions";
+import type { AxiosError } from "axios";
 
 function AccountPage() {
   //********************
@@ -98,14 +100,14 @@ function AccountPage() {
   });
 
   const { mutate: mutateAutoCategorization } = useMutation({
-    mutationFn: (newValue: boolean) => updateAutoCategorization(33, newValue),
+    mutationFn: (newValue: boolean) =>
+      updateAutoCategorization(Number.parseInt(id), newValue),
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["getAccountById", id] });
     },
 
-    onError: (err) => {
-      console.log(err);
+    onError: () => {
       showError("Failed to toggle auto categorization");
     },
   });
@@ -123,7 +125,7 @@ function AccountPage() {
       });
     },
 
-    onError: (err: any) => {
+    onError: () => {
       showError("Failed to create category");
     },
   });
@@ -134,7 +136,7 @@ function AccountPage() {
       resetInvite({
         inviteeUsername: "",
       }),
-    onError: (err) => {
+    onError: () => {
       showError("Failed to create an inviation.");
     },
   });
@@ -216,6 +218,11 @@ function AccountPage() {
       label: cat.name,
       value: String(cat.id),
     })) ?? [];
+
+  //********************
+  // Permissions Check
+  //********************
+  const permissions = useAccountPermissions(account?.userAccounts ?? []);
 
   //********************
   // Handlers
@@ -305,7 +312,7 @@ function AccountPage() {
           <div className="lg:col-span-1 space-y-6">
             <Card>
               <AccountUsers users={account?.userAccounts ?? []} />
-              {isOwner && (
+              {permissions.canInviteUsers && (
                 <div className="mt-3">
                   <Invitations
                     register={registerInvite}
