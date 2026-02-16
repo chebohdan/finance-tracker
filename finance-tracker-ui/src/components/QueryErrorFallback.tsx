@@ -17,7 +17,7 @@ export function QueryErrorFallback({
   if (!error) return null;
 
   const containerClass = isFatal
-    ? "min-h-screen flex items-center justify-center bg-[var(--color-dark-bg)]"
+    ? " text-red-800min-h-screen flex items-center justify-center bg-[var(--color-dark-bg)]"
     : "bg-red-50 border border-red-200 rounded p-4 mb-4";
 
   const textClass = isFatal ? "text-center text-red-600" : "text-red-800";
