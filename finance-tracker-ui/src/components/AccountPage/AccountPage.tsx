@@ -34,7 +34,7 @@ import { QueryErrorFallback } from "../QueryErrorFallback";
 
 // react-toastify
 import { toast } from "react-toastify";
-import useErrorToastNotification from "../../hooks/useErrorToastNotification";
+import useErrorToastNotification from "../../hooks/useToastNotification";
 
 function AccountPage() {
   //********************
@@ -105,6 +105,7 @@ function AccountPage() {
     },
 
     onError: (err) => {
+      console.log(err);
       showError("Failed to toggle auto categorization");
     },
   });
@@ -134,7 +135,7 @@ function AccountPage() {
         inviteeUsername: "",
       }),
     onError: (err) => {
-      showError("Failed to create an inviation");
+      showError("Failed to create an inviation.");
     },
   });
 
@@ -171,7 +172,7 @@ function AccountPage() {
     },
 
     onError: (error) => {
-      showError("Failed to create transaction:");
+      showError("Failed to create transaction.");
     },
   });
 
