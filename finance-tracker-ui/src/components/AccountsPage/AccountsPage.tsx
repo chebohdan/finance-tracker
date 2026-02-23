@@ -89,7 +89,11 @@ function AccountsPage() {
         </div>
       </div>
 
-      <ModalWindow isOpen={isOpen} onClose={() => setIsOpen(false)}>
+      <ModalWindow
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        title="Create account"
+      >
         <CreateAccountForm />
       </ModalWindow>
     </div>
