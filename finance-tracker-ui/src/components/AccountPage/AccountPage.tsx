@@ -266,22 +266,26 @@ function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen  p-6 sm:p-8">
+    <main className="min-h-screen bg-dark-bg p-6 sm:p-8">
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* Account Name */}
-        <div className="text-[var(--color-dark-text)]">
-          <h1 className=" flex items-center gap-2 text-3xl font-bold  mb-4">
-            <MdOutlineAccountBalanceWallet />
+        {/* Page Header */}
+        <header className="pb-2 border-b border-dark-surface">
+          <h1 className="flex items-center gap-3 text-4xl font-bold text-dark-text mb-2">
+            <MdOutlineAccountBalanceWallet className="text-accent" />
             <span>{account?.name}</span>
           </h1>
-          <p className="text-md text-muted">Manage your transaction</p>
-        </div>
+          <p className="text-sm text-dark-text/70">Manage your transactions</p>
+        </header>
 
-        {/* Top Section: Form & Users */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 auto-rows-auto">
-          {/* Transaction Form */}
-          <div className="lg:col-span-1">
+        {/* Main Content: Forms & Users Section */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 auto-rows-auto">
+          {/* Left Column: Transaction Forms */}
+          <section>
             <Card>
+              {/* Transaction Form */}
+              <div id="transaction-section-title" className="sr-only">
+                Create New Transaction
+              </div>
               <NewTransactionForm
                 register={registerTransaction}
                 onSubmit={onTransactionSubmit}
@@ -293,6 +297,12 @@ function AccountPage() {
                 }
                 autoCategorizationEnabled={autoCategorizationEnabled}
               />
+
+              {/* Transaction Category Form */}
+              <hr className="my-8 border-dark-surface" />
+              <div id="category-section-title" className="sr-only">
+                Create New Transaction Category
+              </div>
               <NewTransactionCategoryForm
                 register={registerNewCategory}
                 onSubmit={createCategory}
@@ -300,37 +310,50 @@ function AccountPage() {
                 errors={errorsNewCategory}
               />
             </Card>
-          </div>
+          </section>
 
-          {/* Users Section */}
-          <div className="lg:col-span-1 space-y-6">
+          {/* Right Column: Account Users & Invitations */}
+          <section className="space-y-4">
             <Card>
-              <AccountUsers users={account?.userAccounts ?? []} />
+              {/* Account Users */}
+              <article>
+                <h2 id="users-title" className="sr-only">
+                  Account Users
+                </h2>
+                <AccountUsers users={account?.userAccounts ?? []} />
+              </article>
+
+              {/* Invitation Form - Conditional Rendering */}
               {permissions.canInviteUsers && (
-                <div className="mt-3">
+                <article className="mt-8 pt-8 border-t border-dark-surface">
+                  <h2 id="invitations-title" className="sr-only">
+                    Invite Users to Account
+                  </h2>
                   <Invitations
                     register={registerInvite}
                     errors={errorsInvite}
                     onSubmit={handleInvitationSubmit}
                     handleSubmit={handleSubmitInvite}
                   />
-                </div>
+                </article>
               )}
             </Card>
-          </div>
-        </div>
+          </section>
+        </section>
 
-        {/* Transactions Table */}
-        <Card>
-          {transactions && (
-            <TransactionsTable
-              transactions={transactions}
-              onPageSelect={onTransactionsPageSelect}
-            />
-          )}
-        </Card>
+        {/* Transactions Table Section */}
+        <section>
+          <Card>
+            {transactions && (
+              <TransactionsTable
+                transactions={transactions}
+                onPageSelect={onTransactionsPageSelect}
+              />
+            )}
+          </Card>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }
 

@@ -51,7 +51,6 @@ function NewTransactionForm({
           label="Auto"
           checked={autoCategorizationEnabled}
           handleToggle={toggleAutoCat}
-          aria-label="Toggle automatic categorization"
         />
       </div>
 
@@ -128,7 +127,7 @@ function NewTransactionForm({
       {/* Submit Button */}
       <Button type="submit" fullWidth>
         <span className="flex items-center justify-center gap-2">
-          <GrTransaction aria-hidden="true" />
+          <GrTransaction />
           <span>Add Transaction</span>
         </span>
       </Button>
