@@ -39,6 +39,6 @@ public class Account extends BaseEntity {
     @OneToMany(mappedBy = "account")
     private List<AccountInvitation> invitations;
 
-    @OneToMany(mappedBy = "account")
+    @OneToMany(mappedBy = "account", cascade =  CascadeType.ALL)
     private List<UserAccount> userAccounts;
 }

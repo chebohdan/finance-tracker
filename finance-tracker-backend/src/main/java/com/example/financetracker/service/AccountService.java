@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -72,32 +73,32 @@ public class AccountService {
     public AccountResponse createAccount(Long userId, AccountRequest accountRequest) {
         log.info("Creating new account for userId={}", userId);
 
-        Account account = accountMapper.toEntity(accountRequest);
-
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
-        Account createdAccount = accountRepository.save(account);
-        log.info("Account created with id={} for userId={}", createdAccount.getId(), userId);
+        Account account = accountMapper.toEntity(accountRequest);
 
         UserAccount userAccount = new UserAccount();
+
         UserAccountId userAccountId = new UserAccountId();
         userAccountId.setUserId(userId);
-        userAccountId.setAccountId(createdAccount.getId());
+
+        account.setUserAccounts(new ArrayList<>());
+
         userAccount.setUserAccountId(userAccountId);
         userAccount.setUser(user);
-        userAccount.setAccount(createdAccount);
+        userAccount.setAccount(account);
         userAccount.setRole(EUserAccountRole.OWNER);
         userAccount.setAutoCategorization(Boolean.FALSE);
 
-        account.setUserAccounts(List.of(userAccount));
+        account.getUserAccounts().add(userAccount);
 
-        accountRepository.save(account);
-        log.info("UserAccount created with role OWNER for userId={} and accountId={}", userId, createdAccount.getId());
+        Account createdAccount = accountRepository.save(account);
+
+        log.info("Account created with id={} for userId={}", createdAccount.getId(), userId);
 
         return accountMapper.toResponse(createdAccount);
     }
-
     /**
      * Updates the auto-categorization setting of an account.
      *
