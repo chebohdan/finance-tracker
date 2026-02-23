@@ -33,17 +33,15 @@ import { PAGINATION_SIZE } from "../../constants/pagination";
 import { QueryErrorFallback } from "../QueryErrorFallback";
 
 // react-toastify
-import { toast } from "react-toastify";
 import useErrorToastNotification from "../../hooks/useToastNotification";
 import useAccountPermissions from "../../hooks/useAccountPermissions";
-import type { AxiosError } from "axios";
 
 function AccountPage() {
   //********************
   // State
   //********************
 
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState<number>(0);
 
   //********************
   // Navigation
@@ -173,7 +171,7 @@ function AccountPage() {
       });
     },
 
-    onError: (error) => {
+    onError: () => {
       showError("Failed to create transaction.");
     },
   });
@@ -237,10 +235,6 @@ function AccountPage() {
       </div>
     );
   }
-
-  const isOwner = account?.userAccounts?.some(
-    (ua) => ua.role === "OWNER" && ua.userId === userId,
-  );
 
   const onTransactionsPageSelect = (newPage: number) => {
     setPage(newPage); // That's it! Query refetches automatically
