@@ -23,7 +23,7 @@ function CreateAccountForm() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="text-[var(--color-dark-text)] rounded-lg bg-[var(--color-dark-bg)] p-4"
+      className="text-[var(--color-dark-text)] rounded-lg p-4"
     >
       <FormInput<AccountRequest>
         label="Account Name"
@@ -40,7 +40,9 @@ function CreateAccountForm() {
         name="balance"
       />
       <div className="mt-5 flex gap-3">
-        <Button type="primary" label="Create" buttonType="submit" />
+        <Button variant="primary" type="submit">
+          Create
+        </Button>
       </div>
     </form>
   );
